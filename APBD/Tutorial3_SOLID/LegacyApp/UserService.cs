@@ -1,71 +1,52 @@
 ﻿using System;
+using LegacyApp.Implementations;
+using LegacyApp.Interfaces;
+using LegacyApp.Validators;
 
 namespace LegacyApp
 {
     public class UserService
     {
+        private readonly IUserValidator _userValidator;
+        private readonly IClientRepository _clientRepository;
+        private readonly IUserCreditLimit _userCreditLimit;
+        private readonly IUserDataAccessProvider _userDataAccessProvider;
+        
+        public UserService() : this(new UserValidator(), 
+            new ClientRepository(), 
+            new UserCreditLimit(),
+            new UserDataAccessProvider()) { }
+
+        public UserService(IUserValidator userValidator, 
+            IClientRepository clientRepository,
+            IUserCreditLimit userCreditLimit,
+            IUserDataAccessProvider userDataAccessProvider)
+        {
+            _userValidator = userValidator;
+            _clientRepository = clientRepository;
+            _userCreditLimit = userCreditLimit;
+            _userDataAccessProvider = userDataAccessProvider;
+        }
+        
         public bool AddUser(string firstName, string lastName, string email, DateTime dateOfBirth, int clientId)
         {
-            if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
-            {
-                return false;
-            }
-
-            if (!email.Contains("@") && !email.Contains("."))
-            {
-                return false;
-            }
-
-            var now = DateTime.Now;
-            int age = now.Year - dateOfBirth.Year;
-            if (now.Month < dateOfBirth.Month || (now.Month == dateOfBirth.Month && now.Day < dateOfBirth.Day)) age--;
-
-            if (age < 21)
-            {
-                return false;
-            }
-
-            var clientRepository = new ClientRepository();
-            var client = clientRepository.GetById(clientId);
-
             var user = new User
             {
-                Client = client,
+                Client = null,
                 DateOfBirth = dateOfBirth,
                 EmailAddress = email,
                 FirstName = firstName,
                 LastName = lastName
             };
+            
+            if (!_userValidator.ValidatePersonalData(user)) return false;
+            
+            user.Client = _clientRepository.GetById(clientId);
+            _userCreditLimit.applyLimit(user);
 
-            if (client.Type == "VeryImportantClient")
-            {
-                user.HasCreditLimit = false;
-            }
-            else if (client.Type == "ImportantClient")
-            {
-                using (var userCreditService = new UserCreditService())
-                {
-                    int creditLimit = userCreditService.GetCreditLimit(user.LastName, user.DateOfBirth);
-                    creditLimit = creditLimit * 2;
-                    user.CreditLimit = creditLimit;
-                }
-            }
-            else
-            {
-                user.HasCreditLimit = true;
-                using (var userCreditService = new UserCreditService())
-                {
-                    int creditLimit = userCreditService.GetCreditLimit(user.LastName, user.DateOfBirth);
-                    user.CreditLimit = creditLimit;
-                }
-            }
+            if(!_userValidator.ValidateCreditLimit(user)) return false;
 
-            if (user.HasCreditLimit && user.CreditLimit < 500)
-            {
-                return false;
-            }
-
-            UserDataAccess.AddUser(user);
+            _userDataAccessProvider.AddUser(user);
             return true;
         }
     }
