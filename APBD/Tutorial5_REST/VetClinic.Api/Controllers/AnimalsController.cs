@@ -33,7 +33,8 @@ public class AnimalsController : ControllerBase
         {
             Name = request.Name, 
             Category = request.Category, 
-            Weight = request.Weight
+            Weight = request.Weight,
+            FurColor = request.FurColor
         };
         
         _animals.Add(newAnimal);
