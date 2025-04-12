@@ -9,18 +9,18 @@ namespace VetClinic.Api.Controllers;
 [Route("api/[controller]")]
 public class AnimalsController : ControllerBase
 {
-    private readonly List<Animal> _users = AnimalsRepository.Animals;
+    private readonly List<Animal> _animals = AnimalsRepository.Animals;
 
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_users);
+        return Ok(_animals);
     }
 
     [HttpGet("{id:int}")]
     public IActionResult GetById(int id)
     {
-        var animal = _users.FirstOrDefault(x => x.Id == id);
+        var animal = _animals.FirstOrDefault(x => x.Id == id);
         if (animal is null) return NotFound();
         
         return Ok(animal);
@@ -29,17 +29,21 @@ public class AnimalsController : ControllerBase
     [HttpPost]
     public IActionResult Create(CreateAnimalRequest request)
     {
-        var id = _users.Max(x => x.Id) + 1;
-        var newAnimal = new Animal { Name = request.Name, Category = request.Category, Weight = request.Weight };
+        var newAnimal = new Animal
+        {
+            Name = request.Name, 
+            Category = request.Category, 
+            Weight = request.Weight
+        };
         
-        _users.Add(newAnimal);
+        _animals.Add(newAnimal);
         return CreatedAtAction(nameof(GetById), new { id = newAnimal.Id }, newAnimal);
     }
 
     [HttpPut("{id:int}")]
-    public IActionResult Update(int id, UpdateUserRequest request)
+    public IActionResult Update(int id, UpdateAnimalRequest request)
     {
-        var animal = _users.FirstOrDefault(x => x.Id == id);
+        var animal = _animals.FirstOrDefault(x => x.Id == id);
         if (animal is null) return NotFound();
         
         animal.Name = request.Name;
@@ -48,5 +52,15 @@ public class AnimalsController : ControllerBase
         animal.FurColor = request.FurColor;
         
         return Ok(animal);
+    }
+
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
+    {
+        var animal = _animals.FirstOrDefault(x => x.Id == id);
+        if (animal is null) return NotFound();
+        
+        _animals.Remove(animal);
+        return NoContent();
     }
 }

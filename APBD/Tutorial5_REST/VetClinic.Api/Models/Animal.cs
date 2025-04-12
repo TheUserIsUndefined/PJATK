@@ -2,7 +2,8 @@ namespace VetClinic.Api.Models;
 
 public class Animal
 {
-    public int Id { get; set; }
+    private static int _counter;
+    public int Id { get; } = ++_counter;
     public string Name { get; set; }
     public string Category { get; set; }
     public double Weight { get; set; }
