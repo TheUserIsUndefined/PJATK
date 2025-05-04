@@ -1,7 +1,7 @@
 package Single_Layer_Network;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import Miscellaneous.*;
+
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -24,15 +24,15 @@ public class Main {
             scanner.close();
         }));
 
-        double alpha = numberInput("learning rate");
-        int epochs = (int) numberInput("epochs amount");
+        double alpha = DataInput.numberInput(scanner, "learning rate");
+        int epochs = (int) DataInput.numberInput(scanner, "epochs amount");
 
         Perceptron.initialize(alpha, lettersAmount, epochs);
 
         System.out.print("Enter training set path: ");
         String trainingPath = scanner.next();
 
-        var trainingData = transformData(parseData(trainingPath), false);
+        var trainingData = transformData(DataParser.parseData(trainingPath, 2), false);
 
         trainPerceptrons(trainingData);
 
@@ -43,7 +43,7 @@ public class Main {
         if (testPath.isEmpty())
             classifyUserInput();
         else {
-            var testData = transformData(parseData(testPath), true);
+            var testData = transformData(DataParser.parseData(testPath, 2), true);
 
             System.out.printf("\nAccuracy: %f", classifyData(testData));
         }
@@ -127,20 +127,6 @@ public class Main {
         System.out.println("Training finished.");
     }
 
-    private static List<List<String>> parseData(String dataPath) {
-        List<List<String>> data = new ArrayList<>();
-        try (BufferedReader brTraining = new BufferedReader(new FileReader(dataPath))) {
-            String line;
-            while ((line = brTraining.readLine()) != null)
-                data.add(List.of(line.split(",", 2)));
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
-
-        return data;
-    }
-
     private static Map<String, List<List<Double>>> transformData(List<List<String>> inputData, boolean saveMapping) {
         Map<String, List<List<Double>>> outputData = new HashMap<>();
         for (List<String> row : inputData) {
@@ -185,23 +171,5 @@ public class Main {
         }
 
         return sum;
-    }
-
-    private static double numberInput(String inputName) {
-        double input = 0;
-        do {
-            System.out.printf("Enter %s: ", inputName);
-            try {
-                input = scanner.nextDouble();
-
-                if (input <= 0)
-                    System.out.printf("%s should be greater than 0\n", inputName);
-            } catch (Exception e) {
-                System.out.printf("%s should a number\n", inputName);
-                scanner.nextLine();
-            }
-        } while (input <= 0);
-
-        return input;
     }
 }

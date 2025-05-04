@@ -1,5 +1,7 @@
 package Perceptron;
 
+import Miscellaneous.DataInput;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
@@ -12,8 +14,8 @@ public class Main {
 
         Map<Integer, String> classes = new HashMap<>();
 
-        double alpha = numberInput("learning rate");
-        int epochs = (int) numberInput("epochs amount");
+        double alpha = DataInput.numberInput(scanner, "learning rate");
+        int epochs = (int) DataInput.numberInput(scanner, "epochs amount");
 
         System.out.print("Enter training set path: ");
         String trainingPath = scanner.next();
@@ -111,23 +113,5 @@ public class Main {
                 return entry.getKey();
 
         return -1;
-    }
-
-    private static double numberInput(String inputName) {
-        double input = 0;
-        do {
-            System.out.printf("Enter %s: ", inputName);
-            try {
-                input = scanner.nextDouble();
-
-                if (input <= 0)
-                    System.out.printf("%s should be greater than 0\n", inputName);
-            } catch (Exception e) {
-                System.out.printf("%s should a number\n", inputName);
-                scanner.nextLine();
-            }
-        } while (input <= 0);
-
-        return input;
     }
 }
