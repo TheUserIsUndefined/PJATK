@@ -4,6 +4,9 @@ namespace Tutorial8_ADO.NET_Trans_Proceds.Infrastructure;
 
 public interface IUnitOfWork
 {
-    public SqlConnection Connection { get; }
-    public SqlTransaction Transaction { get; }
+    public ValueTask<SqlConnection> GetConnectionAsync();
+    public SqlTransaction? Transaction { get; }
+    public Task BeginTransactionAsync();
+    public Task CommitTransactionAsync();
+    public Task RollbackTransactionAsync();
 }

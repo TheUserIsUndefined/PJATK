@@ -1,3 +1,9 @@
+using Tutorial8_ADO.NET_Trans_Proceds.Infrastructure;
+using Tutorial8_ADO.NET_Trans_Proceds.Repositories;
+using Tutorial8_ADO.NET_Trans_Proceds.Repositories.Interfaces;
+using Tutorial8_ADO.NET_Trans_Proceds.Services;
+using Tutorial8_ADO.NET_Trans_Proceds.Services.Interfaces;
+
 namespace Tutorial8_ADO.NET_Trans_Proceds;
 
 public class Program
@@ -8,6 +14,13 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddAuthorization();
+
+        builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+        builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+        builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+        builder.Services.AddScoped<IProductRepository, ProductRepository>();
+        builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         builder.Services.AddControllers();
 
@@ -17,7 +30,6 @@ public class Program
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();

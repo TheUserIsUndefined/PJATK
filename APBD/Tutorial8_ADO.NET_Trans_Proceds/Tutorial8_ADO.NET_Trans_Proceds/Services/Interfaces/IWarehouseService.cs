@@ -6,4 +6,6 @@ public interface IWarehouseService
 {
     public Task<int> AddProductToWarehouseAsync(AddProductToWarehouseRequest request,
         CancellationToken token);
+    public Task<int> AddProductToWarehouseUsingProcAsync(AddProductToWarehouseRequest request,
+        CancellationToken token);
 }
