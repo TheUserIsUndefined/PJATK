@@ -32,7 +32,7 @@ public class TasksService : ITasksService
     public async Task<GetTeamMemberTasksResponse> GetTeamMemberTasksAsync(int teamMemberId, CancellationToken token)
     {
         if (teamMemberId < 1)
-            throw new ArgumentException($"Team Member {teamMemberId} does not exist.");
+            throw new TeamMemberDoesNotExistException(teamMemberId);
         
         var teamMember = await _teamMemberRepository.GetTeamMemberAsync(teamMemberId, token);
         if(teamMember == null)
@@ -112,6 +112,8 @@ public class TasksService : ITasksService
                 throw new TeamMemberDoesNotExistException(creatorId);
             
             var taskId = await _taskRepository.CreateTaskAsync(request, token);
+
+            await _unitOfWork.CommitTransactionAsync();
             return taskId;
         }
         catch (Exception)
