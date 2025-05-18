@@ -1,15 +1,15 @@
 import tkinter as tk
 
 from models.animals.production_animal import ProductionAnimal
+from utils.window_utils import center_window, GLOBAL_FONT
 
 class StartWindow(tk.Toplevel):
     def __init__(self, master, animals, callback):
         super().__init__(master)
         self.title("Select Starting Animal")
         self.callback = callback
-        self.geometry("600x500")
 
-        tk.Label(self, text="Choose your first animal:", font=('Arial',14)).pack(pady=5)
+        tk.Label(self, text="Choose your first animal:", font=('Arial',GLOBAL_FONT+2)).pack(pady=5)
         container = tk.Frame(self)
         container.pack(fill='both', expand=True)
         canvas = tk.Canvas(container)
@@ -28,10 +28,13 @@ class StartWindow(tk.Toplevel):
             if not isinstance(animal, ProductionAnimal):
                 continue
             row = tk.Frame(scroll_frame)
-            row.pack(fill='x', pady=2)
-            tk.Label(row, text=animal.name, width=12, font=('Arial',12)).pack(side='left')
-            btn = tk.Button(row, text="Choose", font=('Arial',12), command=lambda a=animal: self.select(a))
-            btn.pack(side='right', padx=100)
+            row.pack(padx=5, pady=2)
+            tk.Label(row, text=animal.name, width=12, font=('Arial',GLOBAL_FONT)).pack(side='left')
+            btn = tk.Button(row, text="Choose", fg='green', font=('Arial',GLOBAL_FONT), command=lambda a=animal: self.select(a))
+            btn.pack(padx=100)
+
+        self.update_idletasks()
+        center_window(self, self.winfo_width(), self.winfo_height()+100)
 
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 

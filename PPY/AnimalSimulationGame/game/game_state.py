@@ -1,6 +1,8 @@
+import bisect
+
 class GameState:
     def __init__(self):
-        self.money = 100
+        self.money = 10011
         self.animals = []
         self.inventory = {}
 
@@ -15,7 +17,11 @@ class GameState:
                 idx += 1
                 new_name = f"{new_animal_name} {idx}"
             new_animal.name = new_name
-        self.animals.append(new_animal)
+        bisect.insort(self.animals, new_animal)
+
+    def change_animal_name(self, animal, new_name):
+        animal.name = new_name
+        self.animals.sort(key=lambda a: a.name)
 
     def buy_animal(self, animal):
         price = animal.price

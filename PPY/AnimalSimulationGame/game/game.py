@@ -12,7 +12,7 @@ class Game:
     def __init__(self):
         self.state = GameState()
         self.products = [Beef(), Egg(), Grain(), Milk(), Salmon(), Wheat()]
-        self.animals = [Chicken(), Cow(), Cat(), Dog()]
+        self.animals = [Chicken(), Cow(), Dog(), Cat()]
 
     def start_game(self, selected_animal):
         self.state.add_animal(selected_animal)
@@ -36,14 +36,17 @@ class Game:
     def update_animals_stats(self):
         now = time.time()
         for animal in self.state.animals:
-            animal.update_boredom()
-            animal.update_hunger()
 
             if animal.playing and now >= animal.play_end_time:
                 animal.playing = False
 
+            animal.update_boredom()
+            animal.update_hunger()
+
             if isinstance(animal, ProductionAnimal) and not animal.product_ready:
-                animal.remaining = max(0, animal.remaining - 1)
+                change_by = (0.2 if animal.boredom >= animal.BOREDOM_THRESHOLD
+                                    or animal.hunger >= animal.HUNGER_THRESHOLD else 1)
+                animal.remaining = max(0, animal.remaining - change_by)
                 if animal.remaining == 0: animal.product_ready = True
 
     def feed_animal(self, animal, food_name):

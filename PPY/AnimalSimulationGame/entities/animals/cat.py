@@ -4,4 +4,4 @@ from models.product.product_category import ProductCategory
 
 class Cat(CompanionAnimal):
     def __init__(self):
-        super().__init__("Cat", 35, [ProductCategory.Meat, ProductCategory.Fish])
+        super().__init__("Cat", 1500, [ProductCategory.Meat, ProductCategory.Fish])

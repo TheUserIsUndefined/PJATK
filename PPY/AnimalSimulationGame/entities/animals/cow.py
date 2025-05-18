@@ -5,5 +5,5 @@ from models.product.product_category import ProductCategory
 
 class Cow(ProductionAnimal):
     def __init__(self):
-        super().__init__("Cow", 15, [ProductCategory.Grain],
-                         Milk, 1, 6, 30, 80)
+        super().__init__("Cow", 175, [ProductCategory.Grain],
+                         Milk, 1, 5, 30, 80)

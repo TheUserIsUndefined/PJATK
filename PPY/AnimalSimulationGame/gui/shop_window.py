@@ -4,16 +4,15 @@ from tkinter import messagebox
 from models.animals.companion_animal import CompanionAnimal
 from models.product.buyable_product import BuyableProduct
 from models.product.sellable_product import SellableProduct
+from utils.window_utils import center_window, GLOBAL_FONT
 
 
 class ShopWindow(tk.Toplevel):
-    FONT = 16
-
     def __init__(self, master, game):
         super().__init__(master)
         self.game = game
         self.title("Shop")
-        self.geometry("1280x720")
+
         self.buy_buttons = []
         self.sell_buttons = []
         self.amount_labels = []
@@ -21,7 +20,7 @@ class ShopWindow(tk.Toplevel):
         top = tk.Frame(self)
         top.pack(fill='x', pady=5)
         self.money_var = tk.StringVar(value=f"Money: {self.game.state.money}")
-        tk.Label(top, textvariable=self.money_var, font=('Arial', self.FONT+2)).pack(side='left', padx=5)
+        tk.Label(top, textvariable=self.money_var, font=('Arial', GLOBAL_FONT+2)).pack(side='left', padx=5)
 
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(fill='both', expand=True)
@@ -29,16 +28,19 @@ class ShopWindow(tk.Toplevel):
         self.initialize_sell_section()
         self.initialize_buy_section()
 
+        self.update_idletasks()
+        center_window(self, self.winfo_width(), self.winfo_height()+100)
+
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def initialize_sell_section(self):
         sell_frame = tk.LabelFrame(self.main_frame, text='Sell')
         sell_frame.pack(side='left', fill='y', padx=5, pady=5)
-        tk.Label(sell_frame, text="Product", width=10, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(sell_frame, text="Product", width=10, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                                 column=0)
-        tk.Label(sell_frame, text="Price", width=5, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(sell_frame, text="Price", width=5, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                              column=1)
-        tk.Label(sell_frame, text="Inventory", width=9, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(sell_frame, text="Inventory", width=9, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                               column=2)
         for i, prod in enumerate(self.game.products, start=1):
             if not isinstance(prod, SellableProduct): continue
@@ -46,14 +48,14 @@ class ShopWindow(tk.Toplevel):
             price = prod.price
             amount = self.game.state.inventory.get(type(prod), 0)
 
-            tk.Label(sell_frame, text=prod.name, width=10, font=('Arial', self.FONT-2)).grid(row=i, column=0)
-            tk.Label(sell_frame, text=price, width=5, font=('Arial', self.FONT-2)).grid(row=i, column=1)
+            tk.Label(sell_frame, text=prod.name, width=10, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=0)
+            tk.Label(sell_frame, text=price, width=5, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=1)
 
-            amount_label = tk.Label(sell_frame, text=amount, width=9, font=('Arial', self.FONT-2))
+            amount_label = tk.Label(sell_frame, text=amount, width=9, font=('Arial', GLOBAL_FONT-2))
             amount_label.grid(row=i, column=2)
 
             sell_btn = tk.Button(
-                sell_frame, text="Sell", font=('Arial', self.FONT-2),
+                sell_frame, text="Sell", font=('Arial', GLOBAL_FONT-2),
                 state=('normal' if amount > 0 else 'disabled'),
                 command=lambda p=prod: self.sell(p)
             )
@@ -70,19 +72,19 @@ class ShopWindow(tk.Toplevel):
         self.initialize_food_category(buy_frame)
 
     def initialize_animal_category(self, buy_frame):
-        tk.Label(buy_frame, text="Animals", font=('Arial', self.FONT+2)).pack(anchor='w')
+        tk.Label(buy_frame, text="Animals", font=('Arial', GLOBAL_FONT+2)).pack(anchor='w')
         animal_grid = tk.Frame(buy_frame)
         animal_grid.pack(fill='x')
 
-        tk.Label(animal_grid, text="Name", width=12, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(animal_grid, text="Name", width=12, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                               column=0)
-        tk.Label(animal_grid, text="Type", width=12, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(animal_grid, text="Type", width=12, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                               column=1)
-        tk.Label(animal_grid, text="Produces", width=10, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(animal_grid, text="Produces", width=10, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                                   column=2)
-        tk.Label(animal_grid, text="Produced Amount", width=16, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(animal_grid, text="Produced Amount", width=16, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                              column=3)
-        tk.Label(animal_grid, text="Price", width=6, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(animal_grid, text="Price", width=6, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                               column=4)
 
         for i, animal in enumerate(self.game.animals, start=1):
@@ -92,14 +94,14 @@ class ShopWindow(tk.Toplevel):
                 str(animal.min_product_amount) + '-' + str(animal.max_product_amount))
             price = animal.price
 
-            tk.Label(animal_grid, text=animal.name, width=12, font=('Arial', self.FONT-2)).grid(row=i, column=0)
-            tk.Label(animal_grid, text=animal_type, width=12, font=('Arial', self.FONT-2)).grid(row=i, column=1)
-            tk.Label(animal_grid, text=produces, width=10, font=('Arial', self.FONT-2)).grid(row=i, column=2)
-            tk.Label(animal_grid, text=produced_amount, width=16, font=('Arial', self.FONT-2)).grid(row=i, column=3)
-            tk.Label(animal_grid, text=price, width=6, font=('Arial', self.FONT-2)).grid(row=i, column=4)
+            tk.Label(animal_grid, text=animal.name, width=12, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=0)
+            tk.Label(animal_grid, text=animal_type, width=12, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=1)
+            tk.Label(animal_grid, text=produces, width=10, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=2)
+            tk.Label(animal_grid, text=produced_amount, width=16, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=3)
+            tk.Label(animal_grid, text=price, width=6, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=4)
 
             buy_btn = tk.Button(
-                animal_grid, text="Buy", font=('Arial', self.FONT-2),
+                animal_grid, text="Buy", font=('Arial', GLOBAL_FONT-2),
                 state=('normal' if self.game.state.money >= price else 'disabled'),
                 command=lambda a=animal: self.buy_animal(a)
             )
@@ -108,21 +110,21 @@ class ShopWindow(tk.Toplevel):
             self.buy_buttons.append((buy_btn, price))
 
     def initialize_food_category(self, buy_frame):
-        tk.Label(buy_frame, text="Food", font=('Arial', self.FONT+2)).pack(anchor='w', pady=(10, 0))
+        tk.Label(buy_frame, text="Food", font=('Arial', GLOBAL_FONT+2)).pack(anchor='w', pady=(10, 0))
         food_grid = tk.Frame(buy_frame)
         food_grid.pack(fill='x')
 
-        tk.Label(food_grid, text="Name", width=12, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(food_grid, text="Name", width=12, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                             column=0)
-        tk.Label(food_grid, text="Type", width=10, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(row=0,
+        tk.Label(food_grid, text="Type", width=10, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
                                                                                                             column=1)
-        tk.Label(food_grid, text="Feeds By", width=8, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(
+        tk.Label(food_grid, text="Feeds By", width=8, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(
             row=0,
             column=2)
-        tk.Label(food_grid, text="Price", width=6, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(
+        tk.Label(food_grid, text="Price", width=6, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(
             row=0,
             column=3)
-        tk.Label(food_grid, text="Inventory", width=9, font=('Arial', self.FONT), borderwidth=1, relief='raised').grid(
+        tk.Label(food_grid, text="Inventory", width=9, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(
             row=0,
             column=4
         )
@@ -133,16 +135,16 @@ class ShopWindow(tk.Toplevel):
             price = prod.price
             amount = self.game.state.inventory.get(type(prod), 0)
 
-            tk.Label(food_grid, text=prod.name, width=12, font=('Arial', self.FONT-2)).grid(row=i, column=0)
-            tk.Label(food_grid, text=prod.category.name, width=10, font=('Arial', self.FONT-2)).grid(row=i, column=1)
-            tk.Label(food_grid, text=prod.feed_value, width=8, font=('Arial', self.FONT-2)).grid(row=i, column=2)
-            tk.Label(food_grid, text=price, width=6, font=('Arial', self.FONT-2)).grid(row=i, column=3)
+            tk.Label(food_grid, text=prod.name, width=12, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=0)
+            tk.Label(food_grid, text=prod.category.name, width=10, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=1)
+            tk.Label(food_grid, text=prod.feed_value, width=8, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=2)
+            tk.Label(food_grid, text=price, width=6, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=3)
 
-            amount_label = tk.Label(food_grid, text=amount, width=6, font=('Arial', self.FONT-2))
+            amount_label = tk.Label(food_grid, text=amount, width=6, font=('Arial', GLOBAL_FONT-2))
             amount_label.grid(row=i, column=4)
 
             food_btn = tk.Button(
-                food_grid, text="Buy", font=('Arial', self.FONT-2),
+                food_grid, text="Buy", font=('Arial', GLOBAL_FONT-2),
                 state=('normal' if self.game.state.money >= price else 'disabled'),
                 command=lambda p=prod: self.buy_product(p)
             )

@@ -1,6 +1,8 @@
 class BaseAnimal:
     MAX_BOREDOM = 100
     MAX_HUNGER = 100
+    BOREDOM_THRESHOLD = 90
+    HUNGER_THRESHOLD = 90
 
     def __init__(self, name, price, allowed_food_categories, boredom_rate, hunger_rate, hunger=50, boredom=50):
         self.type = self.__class__.__name__
@@ -34,3 +36,6 @@ class BaseAnimal:
 
     def add_hunger(self, amount):
         self.hunger = min(self.MAX_HUNGER, self.hunger + amount)
+
+    def __lt__(self, other):
+        return self.name < other.name
