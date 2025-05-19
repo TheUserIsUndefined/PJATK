@@ -13,6 +13,7 @@ class BaseAnimal:
         self.boredom = boredom
         self.boredom_rate = boredom_rate
         self.hunger_rate = hunger_rate
+        self.isAlive = True
         self.playing = False
         self.play_end_time = None
 

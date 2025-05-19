@@ -3,6 +3,7 @@ import time
 from entities.animals import *
 from entities.foods import *
 from game.game_state import GameState
+from models.animals.companion_animal import CompanionAnimal
 from models.animals.production_animal import ProductionAnimal
 
 
@@ -48,6 +49,10 @@ class Game:
                                     or animal.hunger >= animal.HUNGER_THRESHOLD else 1)
                 animal.remaining = max(0, animal.remaining - change_by)
                 if animal.remaining == 0: animal.product_ready = True
+            elif isinstance(animal, CompanionAnimal):
+                if animal.isAlive:
+                    animal.update_death_timer()
+
 
     def feed_animal(self, animal, food_name):
         food = next(p for p in self.products if p.name == food_name)

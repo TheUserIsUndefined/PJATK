@@ -98,8 +98,8 @@ class MainWindow(tk.Tk):
         self.shop_window = ShopWindow(self, self.game)
 
     def update_animal_list(self, selected_index=None):
-        names = [('*' if (isinstance(a, ProductionAnimal) and a.product_ready)
-                                   or a.hunger >= a.HUNGER_THRESHOLD or a.boredom >= a.HUNGER_THRESHOLD else '')
+        names = [("(DEAD) " if not a.isAlive else ('*' if (isinstance(a, ProductionAnimal) and a.product_ready)
+                                   or a.hunger >= a.HUNGER_THRESHOLD or a.boredom >= a.HUNGER_THRESHOLD else ''))
                  + a.name
                  for a in self.game.state.animals]
 
@@ -148,7 +148,13 @@ class MainWindow(tk.Tk):
             else: status = "Bored"
 
         if status != "":
-            status += " (production is slowed)!"
+            if isinstance(animal, ProductionAnimal):
+                status += " (production is slowed)!"
+            elif isinstance(animal, CompanionAnimal):
+                if hunger_threshold_reached:
+                    status += " (life in danger)!"
+                else:
+                    status += " (animal gets hungry faster)!"
         else: status = "OK"
 
         self.status_label.configure(text=f"Status: {status}", fg='green' if status == "OK" else 'red')
@@ -196,6 +202,7 @@ class MainWindow(tk.Tk):
 
     def apply_name(self, entry, cancel_btn, ok_btn):
         max_name_length = 20
+        banned_words = ["(dead)"]
 
         new_name = entry.get()
         if any(animal.name == new_name for animal in self.game.state.animals):
@@ -214,6 +221,12 @@ class MainWindow(tk.Tk):
             messagebox.showerror("Error",
                                  f"Name cannot be longer than {max_name_length} characters!")
             return
+
+        for word in banned_words:
+            if word.lower() in new_name.lower():
+                messagebox.showerror("Error", f"Name cannot contain word {word}")
+                return
+
 
         self.game.state.change_animal_name(self.current_animal, new_name)
 
