@@ -1,8 +1,6 @@
-import time
-
 from entities.animals import *
 from entities.foods import *
-from game.game_state import GameState
+from .game_state import GameState
 from models.animals.companion_animal import CompanionAnimal
 from models.animals.production_animal import ProductionAnimal
 
@@ -28,27 +26,25 @@ class Game:
         if any(a.playing for a in self.state.animals): return False
         if seconds > 0:
             animal.playing = True
-            animal.play_end_time = time.time() + seconds
+            animal.playtime_left = seconds
 
             return True
 
         return False
 
     def update_animals_stats(self):
-        now = time.time()
         for animal in self.state.animals:
-
-            if animal.playing and now >= animal.play_end_time:
-                animal.playing = False
-
             animal.update_boredom()
             animal.update_hunger()
 
+            if animal.playing:
+                animal.playtime_left -= 1
+
+                if animal.playtime_left <= 0:
+                    animal.playing = False
+
             if isinstance(animal, ProductionAnimal) and not animal.product_ready:
-                change_by = (0.2 if animal.boredom >= animal.BOREDOM_THRESHOLD
-                                    or animal.hunger >= animal.HUNGER_THRESHOLD else 1)
-                animal.remaining = max(0, animal.remaining - change_by)
-                if animal.remaining == 0: animal.product_ready = True
+                animal.update_production_timer()
             elif isinstance(animal, CompanionAnimal):
                 if animal.isAlive:
                     animal.update_death_timer()

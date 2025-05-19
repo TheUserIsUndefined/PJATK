@@ -12,10 +12,10 @@ class GameState:
         existing_names = [a.name for a in self.animals]
         if new_animal_name in existing_names:
             idx = 1
-            new_name = f"{new_animal_name} {idx}"
+            new_name = f"{new_animal_name}_{idx}"
             while new_name in existing_names:
                 idx += 1
-                new_name = f"{new_animal_name} {idx}"
+                new_name = f"{new_animal_name}_{idx}"
             new_animal.name = new_name
         bisect.insort(self.animals, new_animal)
 

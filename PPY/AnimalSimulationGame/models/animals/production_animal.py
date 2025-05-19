@@ -12,13 +12,20 @@ class ProductionAnimal(BaseAnimal):
         self.max_product_amount = max_product_amount
         self.min_production_time = min_production_time
         self.max_production_time = max_production_time
-        self.remaining = 0
+        self.production_timer = 0
         self.product_ready = False
         self.schedule_next()
 
+    def update_production_timer(self):
+        change_by = (0.2 if self.boredom >= self.BOREDOM_THRESHOLD
+                            or self.hunger >= self.HUNGER_THRESHOLD else 1)
+        self.production_timer = max(0, self.production_timer - change_by)
+
+        if self.production_timer == 0: self.product_ready = True
+
     def schedule_next(self):
         interval = random.randint(self.min_production_time, self.max_production_time)
-        self.remaining = interval
+        self.production_timer = interval
         self.product_ready = False
 
     def collect(self):

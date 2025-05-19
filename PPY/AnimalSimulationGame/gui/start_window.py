@@ -1,7 +1,7 @@
 import tkinter as tk
 
 from models.animals.production_animal import ProductionAnimal
-from utils.window_utils import center_window, GLOBAL_FONT
+from utils.window_utils import GLOBAL_FONT, center_window, resize_window
 
 class StartWindow(tk.Toplevel):
     def __init__(self, master, animals, callback):
@@ -34,7 +34,8 @@ class StartWindow(tk.Toplevel):
             btn.pack(padx=100)
 
         self.update_idletasks()
-        center_window(self, self.winfo_width(), self.winfo_height()+100)
+        resize_window(self, new_height=self.winfo_height()+100)
+        center_window(self)
 
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 

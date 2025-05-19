@@ -1,6 +1,5 @@
 import math
 import re
-import time
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
@@ -22,10 +21,12 @@ class MainWindow(tk.Tk):
 
         top = tk.Frame(self)
         top.pack(fill='x', pady=10)
-        tk.Button(top, text="Shop", font=('Arial',GLOBAL_FONT+2), command=self.open_shop).pack(side='left', padx=5)
+        self.shop_btn = tk.Button(top, text="Shop", fg='blue', disabledforeground='red',
+                                  font=('Arial',GLOBAL_FONT+2), command=self.open_shop)
+        self.shop_btn.pack(side='left', padx=5)
         self.animal_list = ttk.Combobox(top, state='readonly', font=('Arial',GLOBAL_FONT+2))
         self.animal_list.pack(side='left', padx=5)
-        self.animal_list.bind('<<ComboboxSelected>>', lambda e: self.select_animal())
+        self.animal_list.bind('<<ComboboxSelected>>', lambda e: self.select_animal(True))
         self.status_label = tk.Label(top, font=('Arial', GLOBAL_FONT + 4))
         self.status_label.pack(side='left', padx=10)
 
@@ -92,30 +93,62 @@ class MainWindow(tk.Tk):
 
         self.update_animal_list()
         self.update_idletasks()
-        center_window(self, self.winfo_width(), self.winfo_height())
+        center_window(self)
 
     def open_shop(self):
         self.shop_window = ShopWindow(self, self.game)
+        self.shop_btn.config(state=tk.DISABLED)
 
-    def update_animal_list(self, selected_index=None):
-        names = [("(DEAD) " if not a.isAlive else ('*' if (isinstance(a, ProductionAnimal) and a.product_ready)
-                                   or a.hunger >= a.HUNGER_THRESHOLD or a.boredom >= a.HUNGER_THRESHOLD else ''))
-                 + a.name
+    def close_shop(self):
+        self.shop_window.destroy()
+        self.shop_window = None
+        self.shop_btn.config(state=tk.NORMAL)
+
+    def update_animal_list(self):
+        decorated_names = [self.get_animal_prefix(a) + a.name
                  for a in self.game.state.animals]
 
-        self.animal_list['values'] = names
-        if names:
-            if selected_index is not None and 0 <= selected_index < len(names):
-                self.animal_list.current(selected_index)
+        decorated_names.sort(key=lambda d_name: 0 if d_name == "*" else 2 if d_name.startswith("(DEAD)") else 1)
+
+        self.animal_list['values'] = decorated_names
+        if decorated_names:
+            if self.current_animal is not None:
+                index = None
+                for i, name in enumerate(decorated_names):
+                    if name.replace("*", "") == self.current_animal.name:
+                        index = i
+                self.animal_list.current(0 if index is None else index)
             else:
                 self.animal_list.current(0)
             self.select_animal()
 
-    def select_animal(self):
-        name = self.animal_list.get().replace('*','')
+    def select_animal(self, clicked=False):
+        name = self.animal_list.get().replace('*','').replace("(DEAD) ", '')
         animal = next(an for an in self.game.state.animals if an.name == name)
+
+        if not animal.isAlive:
+            if clicked:
+                self.game.state.animals.remove(animal)
+                self.update_animal_list()
+                return
+
+            self.animal_list.current(0)
+            self.select_animal()
+            return
+
         self.current_animal = animal
 
+        self.update_animal_image()
+
+        self.update_animal_properties()
+
+        self.update_animal_status()
+
+        self.update_food_list()
+
+        self.update_play_frame()
+
+    def update_animal_image(self):
         animal_type = type(self.current_animal).__name__
         if self.img_label.image_name != animal_type:
             self.img_label.image_name = animal_type
@@ -126,28 +159,45 @@ class MainWindow(tk.Tk):
 
             self.img_label.configure(image=self.animal_images[animal_type])
 
-        self.name_label.config(text=animal.name)
+    def update_animal_properties(self):
+        animal = self.current_animal
 
+        name = animal.name
         hunger = animal.hunger
         boredom = animal.boredom
         hunger_threshold_reached = hunger >= animal.HUNGER_THRESHOLD
         boredom_threshold_reached = boredom >= animal.BOREDOM_THRESHOLD
 
-        self.hunger_label.configure(text=f"Hunger: {int(hunger)}",
+        self.name_label.config(text=name)
+        self.hunger_label.config(text=f"Hunger: {int(hunger)}",
                                     fg='red' if hunger_threshold_reached else 'green')
-        self.boredom_label.configure(text=f"Boredom: {int(boredom)}",
+        self.boredom_label.config(text=f"Boredom: {int(boredom)}",
                                      fg='red' if boredom_threshold_reached else 'green')
+
+        if isinstance(animal, ProductionAnimal):
+            if animal.product_ready:
+                self.prod_label.config(text=f"{animal.name} is ready to give product(-s)!", fg='green')
+            else:
+                self.prod_label.config(text=f"Produces in: {math.ceil(animal.production_timer)}s", fg='red')
+        else:
+            self.prod_label.config(text="")
+
+    def update_animal_status(self):
+        animal = self.current_animal
+
+        hunger_threshold_reached = animal.hunger >= animal.HUNGER_THRESHOLD
+        boredom_threshold_reached = animal.boredom >= animal.BOREDOM_THRESHOLD
 
         status = ""
         if hunger_threshold_reached:
             status = "Hungry"
         if boredom_threshold_reached:
-            if status != "":
-                status += " and"
-                status += " bored"
-            else: status = "Bored"
+            if status:
+                status += " and bored"
+            else:
+                status = "Bored"
 
-        if status != "":
+        if status:
             if isinstance(animal, ProductionAnimal):
                 status += " (production is slowed)!"
             elif isinstance(animal, CompanionAnimal):
@@ -155,24 +205,17 @@ class MainWindow(tk.Tk):
                     status += " (life in danger)!"
                 else:
                     status += " (animal gets hungry faster)!"
-        else: status = "OK"
+        else:
+            status = "OK"
 
         self.status_label.configure(text=f"Status: {status}", fg='green' if status == "OK" else 'red')
 
-        if isinstance(animal, ProductionAnimal):
-            if animal.product_ready:
-                self.prod_label.config(text=f"{animal.name} is ready to give product(-s)!", fg='green')
-            else:
-                self.prod_label.config(text=f"Produces in: {math.ceil(animal.remaining)}s", fg='red')
-        else:
-            self.prod_label.config(text="")
-
-
+    def update_food_list(self):
         food_list = []
         for prod_type, amount in self.game.state.inventory.items():
             product = next(p for p in self.game.products if type(p) == prod_type)
 
-            if product.category in animal.allowed_food_categories and amount > 0:
+            if product.category in self.current_animal.allowed_food_categories and amount > 0:
                 food_list.append(f"{product.name} ({amount})")
         food_list.sort()
 
@@ -183,8 +226,6 @@ class MainWindow(tk.Tk):
         if not food_list:
             self.food_list.set("")
             self.feed_btn.config(state=tk.DISABLED, disabledforeground='red')
-
-        self.update_play_frame()
 
     def change_name(self):
         for widget in self.name_frame.winfo_children(): widget.pack_forget()
@@ -209,7 +250,7 @@ class MainWindow(tk.Tk):
             messagebox.showinfo("Animal", "Animal with this name already exists!")
             return
 
-        if re.search(r'[^a-zA-Z0-9]', new_name):
+        if re.search(r'[^a-zA-Z0-9_]', new_name):
             messagebox.showerror("Error", "Name cannot contain special characters!")
             return
 
@@ -235,8 +276,7 @@ class MainWindow(tk.Tk):
         ok_btn.destroy()
 
         self.show_name_frame()
-        index = self.game.state.animals.index(self.current_animal)
-        self.update_animal_list(index)
+        self.update_animal_list()
 
     def cancel_change_name(self, entry, cancel_btn, ok_btn):
         entry.destroy()
@@ -253,7 +293,8 @@ class MainWindow(tk.Tk):
         if self.current_animal and selected_food:
             food_name = selected_food.split()[0]
             self.game.feed_animal(self.current_animal, food_name)
-            self.select_animal()
+            self.update_animal_properties()
+            self.update_food_list()
 
     def start_play(self):
         if self.game.start_animal_play(self.current_animal, int(self.play_time_str.get())):
@@ -261,29 +302,32 @@ class MainWindow(tk.Tk):
 
     def cancel_play(self):
         if self.game.cancel_animal_play(self.current_animal):
-            self.select_animal()
+            self.update_animal_properties()
+            self.update_play_frame()
 
     def update_play_frame(self):
+        animal = self.current_animal
+
         self.play_btn.pack_forget()
         self.cancel_btn.pack_forget()
         self.play_time.pack_forget()
         self.play_timer.pack_forget()
         if self.current_animal.playing:
-            time_left = math.ceil(self.current_animal.play_end_time - time.time())
-            self.play_timer.config(text=f"Time left: {time_left}s")
+            self.play_timer.config(text=f"Time left: {animal.playtime_left}s")
 
             self.cancel_btn.pack(side='left', padx=5)
             self.play_timer.pack(side='right', padx=5)
         else:
+
             self.play_btn.pack(side='left', padx=5)
-            if any(a.playing for a in self.game.state.animals if a != self.current_animal):
+            if any(a.playing for a in self.game.state.animals if a != animal):
                 self.play_btn.config(text="Playing with another animal", disabledforeground='red', state=tk.DISABLED)
             else:
                 self.play_time.pack(side='right', padx=5)
                 self.play_btn.config(text="Play", fg='green')
                 try:
                     value = int(self.play_time_str.get())
-                    if value > 0:
+                    if 0 < value <= math.ceil(int(animal.boredom) / animal.BOREDOM_DECREASE_RATE):
                         self.play_btn.config(state=tk.NORMAL)
                     else:
                         self.play_btn.config(state=tk.DISABLED)
@@ -294,11 +338,10 @@ class MainWindow(tk.Tk):
         if isinstance(self.current_animal, ProductionAnimal) and self.current_animal.product_ready:
             self.game.collect_product(self.current_animal)
 
-            current_index = self.game.state.animals.index(self.current_animal)
             if self.shop_window is not None:
                 self.shop_window.refresh_amount_labels()
                 self.shop_window.refresh_sell_buttons()
-            self.update_animal_list(current_index)
+            self.update_animal_list()
         elif isinstance(self.current_animal, CompanionAnimal):
             self.current_animal.play_click()
             self.boredom_label.configure(text=f"Boredom: {int(self.current_animal.boredom)}")
@@ -315,13 +358,19 @@ class MainWindow(tk.Tk):
         self.game.update_animals_stats()
 
         if self.game.state.animals:
-            if self.current_animal is not None:
-                current_index = self.game.state.animals.index(self.current_animal)
-                self.update_animal_list(current_index)
-            else:
-                self.update_animal_list()
+            self.update_animal_list()
         self.after(1000, self.global_tick)
 
     def on_close(self):
         self.destroy()
         exit(0)
+
+    @classmethod
+    def get_animal_prefix(cls, animal):
+        if not animal.isAlive:
+            return "(DEAD) "
+        elif ((isinstance(animal, ProductionAnimal) and animal.product_ready)
+              or animal.hunger >= animal.HUNGER_THRESHOLD
+              or animal.boredom >= animal.HUNGER_THRESHOLD):
+            return "*"
+        return ""

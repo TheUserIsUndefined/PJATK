@@ -4,7 +4,7 @@ from tkinter import messagebox
 from models.animals.companion_animal import CompanionAnimal
 from models.product.buyable_product import BuyableProduct
 from models.product.sellable_product import SellableProduct
-from utils.window_utils import center_window, GLOBAL_FONT
+from utils.window_utils import GLOBAL_FONT, center_window, resize_window
 
 
 class ShopWindow(tk.Toplevel):
@@ -29,9 +29,10 @@ class ShopWindow(tk.Toplevel):
         self.initialize_buy_section()
 
         self.update_idletasks()
-        center_window(self, self.winfo_width(), self.winfo_height()+100)
+        resize_window(self, new_height=self.winfo_height()+100)
+        center_window(self)
 
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.protocol("WM_DELETE_WINDOW", self.master.close_shop)
 
     def initialize_sell_section(self):
         sell_frame = tk.LabelFrame(self.main_frame, text='Sell')
@@ -56,7 +57,7 @@ class ShopWindow(tk.Toplevel):
 
             sell_btn = tk.Button(
                 sell_frame, text="Sell", font=('Arial', GLOBAL_FONT-2),
-                state=('normal' if amount > 0 else 'disabled'),
+                state=(tk.NORMAL if amount > 0 else tk.DISABLED),
                 command=lambda p=prod: self.sell(p)
             )
             sell_btn.grid(row=i, column=3)
@@ -102,7 +103,7 @@ class ShopWindow(tk.Toplevel):
 
             buy_btn = tk.Button(
                 animal_grid, text="Buy", font=('Arial', GLOBAL_FONT-2),
-                state=('normal' if self.game.state.money >= price else 'disabled'),
+                state=(tk.NORMAL if self.game.state.money >= price else tk.DISABLED),
                 command=lambda a=animal: self.buy_animal(a)
             )
             buy_btn.grid(row=i, column=5)
@@ -145,7 +146,7 @@ class ShopWindow(tk.Toplevel):
 
             food_btn = tk.Button(
                 food_grid, text="Buy", font=('Arial', GLOBAL_FONT-2),
-                state=('normal' if self.game.state.money >= price else 'disabled'),
+                state=(tk.NORMAL if self.game.state.money >= price else tk.DISABLED),
                 command=lambda p=prod: self.buy_product(p)
             )
             food_btn.grid(row=i, column=5)
@@ -191,10 +192,6 @@ class ShopWindow(tk.Toplevel):
             self.money_var.set(f"Money: {self.game.state.money}")
             self.refresh_buy_buttons()
             self.refresh_amount_labels()
-            self.master.select_animal()
+            self.master.update_food_list()
         else:
             messagebox.showinfo("Buy", "Not enough money.")
-
-    def on_close(self):
-        self.master.shop_window = None
-        self.destroy()
