@@ -4,4 +4,4 @@ from models.product.buyable_product import BuyableProduct
 
 class Grain(BuyableProduct):
     def __init__(self):
-        super().__init__("Grain", 20, 8, ProductCategory.Grain)
+        super().__init__("Grain", 15, 8, ProductCategory.Grain)

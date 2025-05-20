@@ -6,3 +6,6 @@ class BaseProduct:
         self.name = name
         self.price = price
         self.category = category
+
+    def total_price(self):
+        return self.price

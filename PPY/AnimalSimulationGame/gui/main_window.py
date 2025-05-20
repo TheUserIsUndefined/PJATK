@@ -3,6 +3,8 @@ import re
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
+
+from models.animals.base_animal import BaseAnimal
 from models.animals.production_animal import ProductionAnimal
 from models.animals.companion_animal import CompanionAnimal
 from gui.start_window import StartWindow
@@ -61,24 +63,25 @@ class MainWindow(tk.Tk):
 
         feed_frame = tk.Frame(bottom)
         feed_frame.pack(side='top', anchor='w', pady=5)
-        self.feed_btn = tk.Button(feed_frame, text="Feed", fg='green', font=('Arial',GLOBAL_FONT), command=self.feed)
+        self.feed_btn = tk.Button(feed_frame, text="Feed", fg='green', disabledforeground='red',
+                                  font=('Arial',GLOBAL_FONT), command=self.feed)
         self.food_list = ttk.Combobox(feed_frame, state='readonly', font=('Arial',GLOBAL_FONT))
+        self.feed_cooldown_label = tk.Label(feed_frame, font=('Arial',GLOBAL_FONT))
         self.feed_btn.pack(side='left', padx=5)
-        self.food_list.pack(side='right', padx=5)
 
         play_frame = tk.Frame(bottom)
         play_frame.pack(side='top', anchor='w')
         self.play_btn = tk.Button(play_frame, text="Play", fg='green', font=('Arial',GLOBAL_FONT),
                                   command=self.start_play)
         self.cancel_btn = tk.Button(play_frame,
-                                    text=f"Cancel Play (Boredom +{self.game.BOREDOM_TO_ADD_ON_CANCELLATION})",
+                                    text=f"Cancel Play (Boredom +{BaseAnimal.BOREDOM_TO_ADD_ON_CANCELLATION})",
                                     fg='red', font=('Arial',GLOBAL_FONT), command=self.cancel_play)
         self.play_timer = tk.Label(play_frame, font=('Arial',GLOBAL_FONT+4))
 
-        self.play_time_str = tk.StringVar(value='1')
+        self.play_time_str = tk.StringVar(value='5')
         self.play_time_str.trace('w', lambda *args: self.update_play_frame())
-        self.play_time = ttk.Spinbox(play_frame, from_=1, to=100, textvariable=self.play_time_str,
-                                     font=('Arial',GLOBAL_FONT))
+        self.play_time = ttk.Spinbox(play_frame, from_=self.game.MINIMUM_PLAYTIME, to=100,
+                                     textvariable=self.play_time_str, font=('Arial',GLOBAL_FONT))
         self.play_time.pack(side='right', padx=5)
 
         self.withdraw()
@@ -144,7 +147,7 @@ class MainWindow(tk.Tk):
 
         self.update_animal_status()
 
-        self.update_food_list()
+        self.update_food_frame()
 
         self.update_play_frame()
 
@@ -210,6 +213,20 @@ class MainWindow(tk.Tk):
 
         self.status_label.configure(text=f"Status: {status}", fg='green' if status == "OK" else 'red')
 
+    def update_food_frame(self):
+        self.food_list.pack_forget()
+        self.feed_cooldown_label.pack_forget()
+
+        feed_cooldown = self.current_animal.feed_cooldown
+        if feed_cooldown:
+            self.feed_cooldown_label.config(text=f"Cooldown: {feed_cooldown}s")
+            self.feed_btn.config(state=tk.DISABLED)
+            self.feed_cooldown_label.pack(side='right', padx=5)
+        else:
+            self.feed_btn.config(state=tk.NORMAL)
+            self.update_food_list()
+            self.food_list.pack(side='right', padx=5)
+
     def update_food_list(self):
         food_list = []
         for prod_type, amount in self.game.state.inventory.items():
@@ -250,7 +267,7 @@ class MainWindow(tk.Tk):
             messagebox.showinfo("Animal", "Animal with this name already exists!")
             return
 
-        if re.search(r'[^a-zA-Z0-9_]', new_name):
+        if re.search(r'\W', new_name):
             messagebox.showerror("Error", "Name cannot contain special characters!")
             return
 
@@ -293,41 +310,46 @@ class MainWindow(tk.Tk):
         if self.current_animal and selected_food:
             food_name = selected_food.split()[0]
             self.game.feed_animal(self.current_animal, food_name)
+            if self.shop_window is not None:
+                self.shop_window.refresh_amount_labels()
+
             self.update_animal_properties()
-            self.update_food_list()
+            self.update_food_frame()
 
     def start_play(self):
         if self.game.start_animal_play(self.current_animal, int(self.play_time_str.get())):
             self.update_play_frame()
 
     def cancel_play(self):
-        if self.game.cancel_animal_play(self.current_animal):
+        if self.current_animal.cancel_play():
             self.update_animal_properties()
             self.update_play_frame()
 
     def update_play_frame(self):
-        animal = self.current_animal
-
         self.play_btn.pack_forget()
         self.cancel_btn.pack_forget()
         self.play_time.pack_forget()
         self.play_timer.pack_forget()
-        if self.current_animal.playing:
-            self.play_timer.config(text=f"Time left: {animal.playtime_left}s")
+
+        animal = self.current_animal
+        playtime_left = animal.playtime_left
+        if playtime_left:
+            self.play_timer.config(text=f"Time left: {playtime_left}s")
 
             self.cancel_btn.pack(side='left', padx=5)
             self.play_timer.pack(side='right', padx=5)
         else:
 
             self.play_btn.pack(side='left', padx=5)
-            if any(a.playing for a in self.game.state.animals if a != animal):
+            if any(a.playtime_left for a in self.game.state.animals if a != animal):
                 self.play_btn.config(text="Playing with another animal", disabledforeground='red', state=tk.DISABLED)
             else:
                 self.play_time.pack(side='right', padx=5)
                 self.play_btn.config(text="Play", fg='green')
                 try:
                     value = int(self.play_time_str.get())
-                    if 0 < value <= math.ceil(int(animal.boredom) / animal.BOREDOM_DECREASE_RATE):
+                    if (self.game.MINIMUM_PLAYTIME <= value <=
+                            math.ceil(int(animal.boredom) / animal.BOREDOM_DECREASE_RATE)):
                         self.play_btn.config(state=tk.NORMAL)
                     else:
                         self.play_btn.config(state=tk.DISABLED)
@@ -356,6 +378,12 @@ class MainWindow(tk.Tk):
 
     def global_tick(self):
         self.game.update_animals_stats()
+        if self.game.update_product_prices():
+            if self.shop_window is not None:
+                self.shop_window.refresh_sell_price_labels()
+
+        if self.shop_window is not None:
+            self.shop_window.refresh_update_timer_label()
 
         if self.game.state.animals:
             self.update_animal_list()

@@ -4,8 +4,10 @@ class BaseAnimal:
     BOREDOM_THRESHOLD = 90
     HUNGER_THRESHOLD = 90
     BOREDOM_DECREASE_RATE = 2
+    BOREDOM_TO_ADD_ON_CANCELLATION = 3
+    FEED_COOLDOWN = 3
 
-    def __init__(self, name, price, allowed_food_categories, boredom_rate, hunger_rate, hunger=90, boredom=50):
+    def __init__(self, name, price, allowed_food_categories, boredom_rate, hunger_rate, hunger=50, boredom=50):
         self.type = self.__class__.__name__
         self.name = name
         self.price = price
@@ -15,23 +17,40 @@ class BaseAnimal:
         self.boredom_rate = boredom_rate
         self.hunger_rate = hunger_rate
         self.isAlive = True
-        self.playing = False
         self.playtime_left = None
+        self.feed_cooldown = None
 
     def feed(self, amount):
         self.hunger = max(0, self.hunger - amount)
 
     def update_boredom(self):
-        if self.playing:
+        if self.playtime_left:
             self.boredom = max(0, self.boredom - self.BOREDOM_DECREASE_RATE)
         else:
             self.add_boredom(self.boredom_rate)
 
     def update_hunger(self, multiplier = 1):
-        if self.playing and multiplier == 1:
+        if self.playtime_left and multiplier == 1:
             multiplier = 1.2
 
         self.add_hunger(self.hunger_rate * multiplier)
+
+    def start_play(self, seconds):
+        if seconds > 0:
+            self.playtime_left = seconds
+
+            return True
+
+        return False
+
+    def cancel_play(self):
+        if self.playtime_left:
+            self.add_boredom(self.BOREDOM_TO_ADD_ON_CANCELLATION)
+            self.playtime_left = 0
+
+            return True
+
+        return False
 
     def add_boredom(self, amount):
         self.boredom = min(self.MAX_BOREDOM, self.boredom + amount)

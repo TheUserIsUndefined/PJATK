@@ -6,7 +6,7 @@ class CompanionAnimal(BaseAnimal):
     BOREDOM_DECREASE_PER_CLICK = 0.15
     HUNGRY_MULTIPLIER = 1.5
 
-    def __init__(self, name, price, allowed_food_categories, boredom_rate=0.6, hunger_rate=0.3):
+    def __init__(self, name, price, allowed_food_categories, boredom_rate=0.4, hunger_rate=0.3):
         super().__init__(name, price, allowed_food_categories, boredom_rate, hunger_rate)
         self.until_death = 0
 

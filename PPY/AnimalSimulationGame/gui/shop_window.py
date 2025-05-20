@@ -16,15 +16,20 @@ class ShopWindow(tk.Toplevel):
         self.buy_buttons = []
         self.sell_buttons = []
         self.amount_labels = []
+        self.price_labels = []
 
         top = tk.Frame(self)
         top.pack(fill='x', pady=5)
-        self.money_var = tk.StringVar(value=f"Money: {self.game.state.money}")
-        tk.Label(top, textvariable=self.money_var, font=('Arial', GLOBAL_FONT+2)).pack(side='left', padx=5)
+        self.money_label = tk.Label(top, font=('Arial', GLOBAL_FONT+2))
+        self.money_label.pack(anchor='w', padx=10)
+        self.update_timer_label = tk.Label(top, fg='green', font=('Arial', GLOBAL_FONT))
+        self.update_timer_label.pack(anchor='w', padx=10)
 
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(fill='both', expand=True)
 
+        self.refresh_money_label()
+        self.refresh_update_timer_label()
         self.initialize_sell_section()
         self.initialize_buy_section()
 
@@ -37,20 +42,22 @@ class ShopWindow(tk.Toplevel):
     def initialize_sell_section(self):
         sell_frame = tk.LabelFrame(self.main_frame, text='Sell')
         sell_frame.pack(side='left', fill='y', padx=5, pady=5)
-        tk.Label(sell_frame, text="Product", width=10, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
-                                                                                                                column=0)
-        tk.Label(sell_frame, text="Price", width=5, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
-                                                                                                             column=1)
-        tk.Label(sell_frame, text="Inventory", width=9, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
-                                                                                                              column=2)
+        tk.Label(sell_frame, text="Product", width=10, font=('Arial', GLOBAL_FONT), borderwidth=1,
+                 relief='raised').grid(row=0, column=0)
+        tk.Label(sell_frame, text="Price", width=6, font=('Arial', GLOBAL_FONT), borderwidth=1,
+                 relief='raised').grid(row=0, column=1)
+        tk.Label(sell_frame, text="Inventory", width=9, font=('Arial', GLOBAL_FONT), borderwidth=1,
+                 relief='raised').grid(row=0, column=2)
         for i, prod in enumerate(self.game.products, start=1):
             if not isinstance(prod, SellableProduct): continue
 
-            price = prod.price
+            price = prod.total_price()
             amount = self.game.state.inventory.get(type(prod), 0)
 
             tk.Label(sell_frame, text=prod.name, width=10, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=0)
-            tk.Label(sell_frame, text=price, width=5, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=1)
+
+            price_label = tk.Label(sell_frame, text=self.format_money(price), width=6, font=('Arial', GLOBAL_FONT-2))
+            price_label.grid(row=i, column=1)
 
             amount_label = tk.Label(sell_frame, text=amount, width=9, font=('Arial', GLOBAL_FONT-2))
             amount_label.grid(row=i, column=2)
@@ -62,8 +69,9 @@ class ShopWindow(tk.Toplevel):
             )
             sell_btn.grid(row=i, column=3)
 
-            self.sell_buttons.append((sell_btn, type(prod)))
-            self.amount_labels.append((amount_label, type(prod)))
+            self.sell_buttons.append((sell_btn, prod))
+            self.amount_labels.append((amount_label, prod))
+            self.price_labels.append((price_label, prod))
 
     def initialize_buy_section(self):
         buy_frame = tk.LabelFrame(self.main_frame, text='Buy')
@@ -77,16 +85,16 @@ class ShopWindow(tk.Toplevel):
         animal_grid = tk.Frame(buy_frame)
         animal_grid.pack(fill='x')
 
-        tk.Label(animal_grid, text="Name", width=12, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
-                                                                                                              column=0)
-        tk.Label(animal_grid, text="Type", width=12, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
-                                                                                                              column=1)
-        tk.Label(animal_grid, text="Produces", width=10, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
-                                                                                                                  column=2)
-        tk.Label(animal_grid, text="Produced Amount", width=16, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
-                                                                                                             column=3)
-        tk.Label(animal_grid, text="Price", width=6, font=('Arial', GLOBAL_FONT), borderwidth=1, relief='raised').grid(row=0,
-                                                                                                              column=4)
+        tk.Label(animal_grid, text="Name", width=12, font=('Arial', GLOBAL_FONT), borderwidth=1,
+                 relief='raised').grid(row=0, column=0)
+        tk.Label(animal_grid, text="Type", width=12, font=('Arial', GLOBAL_FONT), borderwidth=1,
+                 relief='raised').grid(row=0, column=1)
+        tk.Label(animal_grid, text="Produces", width=10, font=('Arial', GLOBAL_FONT), borderwidth=1,
+                 relief='raised').grid(row=0, column=2)
+        tk.Label(animal_grid, text="Produced Amount", width=16, font=('Arial', GLOBAL_FONT), borderwidth=1,
+                 relief='raised').grid(row=0, column=3)
+        (tk.Label(animal_grid, text="Price", width=6, font=('Arial', GLOBAL_FONT), borderwidth=1,
+                  relief='raised').grid(row=0, column=4))
 
         for i, animal in enumerate(self.game.animals, start=1):
             animal_type = type(animal).__bases__[0].__name__.replace("Animal", "")
@@ -99,7 +107,8 @@ class ShopWindow(tk.Toplevel):
             tk.Label(animal_grid, text=animal_type, width=12, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=1)
             tk.Label(animal_grid, text=produces, width=10, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=2)
             tk.Label(animal_grid, text=produced_amount, width=16, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=3)
-            tk.Label(animal_grid, text=price, width=6, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=4)
+            (tk.Label(animal_grid, text=self.format_money(price), width=6, font=('Arial', GLOBAL_FONT-2))
+             .grid(row=i, column=4))
 
             buy_btn = tk.Button(
                 animal_grid, text="Buy", font=('Arial', GLOBAL_FONT-2),
@@ -133,13 +142,13 @@ class ShopWindow(tk.Toplevel):
         for i, prod in enumerate(self.game.products, start=1):
             if not isinstance(prod, BuyableProduct): continue
 
-            price = prod.price
+            price = prod.total_price()
             amount = self.game.state.inventory.get(type(prod), 0)
 
             tk.Label(food_grid, text=prod.name, width=12, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=0)
             tk.Label(food_grid, text=prod.category.name, width=10, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=1)
             tk.Label(food_grid, text=prod.feed_value, width=8, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=2)
-            tk.Label(food_grid, text=price, width=6, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=3)
+            tk.Label(food_grid, text=self.format_money(price), width=6, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=3)
 
             amount_label = tk.Label(food_grid, text=amount, width=6, font=('Arial', GLOBAL_FONT-2))
             amount_label.grid(row=i, column=4)
@@ -152,7 +161,7 @@ class ShopWindow(tk.Toplevel):
             food_btn.grid(row=i, column=5)
 
             self.buy_buttons.append((food_btn, price))
-            self.amount_labels.append((amount_label, type(prod)))
+            self.amount_labels.append((amount_label, prod))
 
     def refresh_buy_buttons(self):
         for btn, cost in self.buy_buttons:
@@ -163,35 +172,50 @@ class ShopWindow(tk.Toplevel):
 
     def refresh_sell_buttons(self):
         for btn, prod in self.sell_buttons:
-            if self.game.state.inventory.get(prod, 0) <= 0:
+            if self.game.state.inventory.get(type(prod), 0) <= 0:
                 btn.config(state='disabled')
             else:
                 btn.config(state='normal')
 
     def refresh_amount_labels(self):
         for label, prod in self.amount_labels:
-            label.config(text=self.game.state.inventory.get(prod, 0))
+            label.config(text=self.game.state.inventory.get(type(prod), 0))
+
+    def refresh_sell_price_labels(self):
+        for label, prod in self.price_labels:
+            label.config(text=self.format_money(prod.total_price()))
+
+    def refresh_update_timer_label(self):
+        self.update_timer_label.config(text=f"Prices refresh in: {self.game.time_until_price_update}s")
+
+    def refresh_money_label(self):
+        self.money_label.config(text=f"Money: " + self.format_money(self.game.state.money))
 
     def sell(self, prod):
         if self.game.state.sell_product(prod):
-            self.money_var.set(f"Money: {self.game.state.money}")
+            self.refresh_money_label()
             self.refresh_sell_buttons()
+            self.refresh_buy_buttons()
             self.refresh_amount_labels()
         else:
             messagebox.showinfo("Sell", "No product to sell.")
 
     def buy_animal(self, animal):
         if self.game.state.buy_animal(animal):
-            self.money_var.set(f"Money: {self.game.state.money}")
+            self.refresh_money_label()
             self.refresh_buy_buttons()
         else:
             messagebox.showinfo("Buy", "Not enough money.")
 
     def buy_product(self, product):
         if self.game.state.buy_product(product):
-            self.money_var.set(f"Money: {self.game.state.money}")
+            self.refresh_money_label()
             self.refresh_buy_buttons()
             self.refresh_amount_labels()
             self.master.update_food_list()
         else:
             messagebox.showinfo("Buy", "Not enough money.")
+
+    @classmethod
+    def format_money(cls, price):
+        return f"${price:.1f}"

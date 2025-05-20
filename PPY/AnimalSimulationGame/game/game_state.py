@@ -1,8 +1,11 @@
 import bisect
 
+from models.product.sellable_product import SellableProduct
+
+
 class GameState:
     def __init__(self):
-        self.money = 10011
+        self.money = 100
         self.animals = []
         self.inventory = {}
 
@@ -34,7 +37,7 @@ class GameState:
         return False
 
     def buy_product(self, product):
-        price = product.price
+        price = product.total_price()
 
         if self.money >= price:
             product_type = type(product)
@@ -47,8 +50,8 @@ class GameState:
     def sell_product(self, prod):
         product_type = type(prod)
 
-        if self.inventory.get(product_type, 0) > 0:
-            self.money += prod.price
+        if isinstance(prod, SellableProduct) and self.inventory.get(product_type, 0) > 0:
+            self.money += prod.total_price()
             self.remove_product(product_type)
             return True
         return False

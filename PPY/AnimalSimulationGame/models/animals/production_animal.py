@@ -5,7 +5,7 @@ class ProductionAnimal(BaseAnimal):
     def __init__(self, name, price, allowed_food_categories, produces,
                  min_product_amount, max_product_amount,
                  min_production_time, max_production_time,
-                 boredom_rate=0.3, hunger_rate=0.6):
+                 boredom_rate=0.3, hunger_rate=0.4):
         super().__init__(name, price, allowed_food_categories, boredom_rate, hunger_rate)
         self.produces = produces
         self.min_product_amount = min_product_amount
@@ -17,7 +17,7 @@ class ProductionAnimal(BaseAnimal):
         self.schedule_next()
 
     def update_production_timer(self):
-        change_by = (0.2 if self.boredom >= self.BOREDOM_THRESHOLD
+        change_by = (0.4 if self.boredom >= self.BOREDOM_THRESHOLD
                             or self.hunger >= self.HUNGER_THRESHOLD else 1)
         self.production_timer = max(0, self.production_timer - change_by)
 
@@ -33,4 +33,4 @@ class ProductionAnimal(BaseAnimal):
             return 0
         self.product_ready = False
         self.schedule_next()
-        return random.randint(self.min_product_amount, self.max_product_amount)
+        return self.produces, random.randint(self.min_product_amount, self.max_product_amount)
