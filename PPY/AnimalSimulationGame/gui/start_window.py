@@ -4,6 +4,7 @@ from models.animals.production_animal import ProductionAnimal
 from utils.window_utils import GLOBAL_FONT, center_window, resize_window
 
 class StartWindow(tk.Toplevel):
+    # Initializes the start window UI
     def __init__(self, master, animals, callback):
         super().__init__(master)
         self.title("Select Starting Animal")
@@ -39,10 +40,12 @@ class StartWindow(tk.Toplevel):
 
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
+    # Handles animal selection and closes the window
     def select(self, animal):
         self.callback(animal)
         self.destroy()
 
+    # Closes the window and application
     def on_close(self):
         self.destroy()
         exit(0)

@@ -5,7 +5,7 @@ from models.product.product_category import ProductCategory
 
 
 class SellableProduct(BaseProduct):
-
+    # Initializes a sellable product with specific parameters
     def __init__(self, name, price, category: ProductCategory = None):
         super().__init__(name, price, category)
         self.price_to_add = 0

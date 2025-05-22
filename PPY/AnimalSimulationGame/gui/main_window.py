@@ -12,6 +12,7 @@ from gui.shop_window import ShopWindow
 from utils.window_utils import center_window, GLOBAL_FONT
 
 class MainWindow(tk.Tk):
+    # Initializes the main window UI, calls start window constructor and starts ticking method
     def __init__(self, game):
         super().__init__()
         self.title("Animal Simulator")
@@ -71,7 +72,8 @@ class MainWindow(tk.Tk):
 
         play_frame = tk.Frame(bottom)
         play_frame.pack(side='top', anchor='w')
-        self.play_btn = tk.Button(play_frame, text="Play", fg='green', font=('Arial',GLOBAL_FONT),
+        self.play_btn = tk.Button(play_frame, text="Play", fg='green', disabledforeground='red',
+                                  font=('Arial',GLOBAL_FONT),
                                   command=self.start_play)
         self.cancel_btn = tk.Button(play_frame,
                                     text=f"Cancel Play (Boredom +{BaseAnimal.BOREDOM_TO_ADD_ON_CANCELLATION})",
@@ -90,6 +92,7 @@ class MainWindow(tk.Tk):
 
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
+    # Starts the game with the selected animal and initializes the main UI
     def start_game(self, selected_animal):
         self.game.start_game(selected_animal)
         self.deiconify()
@@ -98,15 +101,18 @@ class MainWindow(tk.Tk):
         self.update_idletasks()
         center_window(self)
 
+    # Opens the shop window and disables the shop button
     def open_shop(self):
         self.shop_window = ShopWindow(self, self.game)
         self.shop_btn.config(state=tk.DISABLED)
 
+    # Closes the shop window and re-enables the shop button
     def close_shop(self):
         self.shop_window.destroy()
         self.shop_window = None
         self.shop_btn.config(state=tk.NORMAL)
 
+    # Updates the dropdown list of animals with their statuses
     def update_animal_list(self):
         decorated_names = [self.get_animal_prefix(a) + a.name
                  for a in self.game.state.animals]
@@ -125,6 +131,7 @@ class MainWindow(tk.Tk):
                 self.animal_list.current(0)
             self.select_animal()
 
+    # Sets current animal based on selection and updates UI
     def select_animal(self, clicked=False):
         name = self.animal_list.get().replace('*','').replace("(DEAD) ", '')
         animal = next(an for an in self.game.state.animals if an.name == name)
@@ -151,6 +158,7 @@ class MainWindow(tk.Tk):
 
         self.update_play_frame()
 
+    # Loads (if wasn't loaded before) and updates the displayed animal image
     def update_animal_image(self):
         animal_type = type(self.current_animal).__name__
         if self.img_label.image_name != animal_type:
@@ -162,6 +170,7 @@ class MainWindow(tk.Tk):
 
             self.img_label.configure(image=self.animal_images[animal_type])
 
+    # Updates labels for hunger, boredom and production status
     def update_animal_properties(self):
         animal = self.current_animal
 
@@ -178,13 +187,14 @@ class MainWindow(tk.Tk):
                                      fg='red' if boredom_threshold_reached else 'green')
 
         if isinstance(animal, ProductionAnimal):
-            if animal.product_ready:
+            if not animal.production_timer:
                 self.prod_label.config(text=f"{animal.name} is ready to give product(-s)!", fg='green')
             else:
                 self.prod_label.config(text=f"Produces in: {math.ceil(animal.production_timer)}s", fg='red')
         else:
             self.prod_label.config(text="")
 
+    # Updates the status label based on hunger and boredom thresholds
     def update_animal_status(self):
         animal = self.current_animal
 
@@ -213,6 +223,7 @@ class MainWindow(tk.Tk):
 
         self.status_label.configure(text=f"Status: {status}", fg='green' if status == "OK" else 'red')
 
+    # Updates the food selection or cooldown display
     def update_food_frame(self):
         self.food_list.pack_forget()
         self.feed_cooldown_label.pack_forget()
@@ -227,6 +238,7 @@ class MainWindow(tk.Tk):
             self.update_food_list()
             self.food_list.pack(side='right', padx=5)
 
+    # Updates the list of available food from inventory
     def update_food_list(self):
         food_list = []
         for prod_type, amount in self.game.state.inventory.items():
@@ -244,6 +256,7 @@ class MainWindow(tk.Tk):
             self.food_list.set("")
             self.feed_btn.config(state=tk.DISABLED, disabledforeground='red')
 
+    # Switches UI to allow changing an animal's name
     def change_name(self):
         for widget in self.name_frame.winfo_children(): widget.pack_forget()
 
@@ -258,6 +271,7 @@ class MainWindow(tk.Tk):
         cancel_btn.pack(side='left')
         ok_btn.pack(padx=5)
 
+    # Validates and applies the new name to the selected animal
     def apply_name(self, entry, cancel_btn, ok_btn):
         max_name_length = 20
         banned_words = ["(dead)"]
@@ -295,6 +309,7 @@ class MainWindow(tk.Tk):
         self.show_name_frame()
         self.update_animal_list()
 
+    # Cancels the name change and restores the original name frame
     def cancel_change_name(self, entry, cancel_btn, ok_btn):
         entry.destroy()
         cancel_btn.destroy()
@@ -302,9 +317,11 @@ class MainWindow(tk.Tk):
 
         self.show_name_frame()
 
+    # Displays UI elements related to an animal's name
     def show_name_frame(self):
         for widget in self.name_frame.winfo_children(): widget.pack(side='left', padx=5)
 
+    # Feeds the current animal with selected food and refreshes related UI
     def feed(self):
         selected_food = self.food_list.get()
         if self.current_animal and selected_food:
@@ -316,15 +333,18 @@ class MainWindow(tk.Tk):
             self.update_animal_properties()
             self.update_food_frame()
 
+    # Initiates play session with current animal
     def start_play(self):
         if self.game.start_animal_play(self.current_animal, int(self.play_time_str.get())):
             self.update_play_frame()
 
+    # Cancels the current animal's play session and updates UI
     def cancel_play(self):
         if self.current_animal.cancel_play():
             self.update_animal_properties()
             self.update_play_frame()
 
+    # Updates the play frame depending on play state
     def update_play_frame(self):
         self.play_btn.pack_forget()
         self.cancel_btn.pack_forget()
@@ -339,10 +359,9 @@ class MainWindow(tk.Tk):
             self.cancel_btn.pack(side='left', padx=5)
             self.play_timer.pack(side='right', padx=5)
         else:
-
             self.play_btn.pack(side='left', padx=5)
             if any(a.playtime_left for a in self.game.state.animals if a != animal):
-                self.play_btn.config(text="Playing with another animal", disabledforeground='red', state=tk.DISABLED)
+                self.play_btn.config(text="Playing with another animal", state=tk.DISABLED)
             else:
                 self.play_time.pack(side='right', padx=5)
                 self.play_btn.config(text="Play", fg='green')
@@ -356,8 +375,9 @@ class MainWindow(tk.Tk):
                 except ValueError:
                     self.play_btn.config(state=tk.DISABLED)
 
+    # Handles clicking on the animal image for product collection (ProductionAnimal) or play (CompanionAnimal)
     def click_event(self):
-        if isinstance(self.current_animal, ProductionAnimal) and self.current_animal.product_ready:
+        if isinstance(self.current_animal, ProductionAnimal) and not self.current_animal.production_timer:
             self.game.collect_product(self.current_animal)
 
             if self.shop_window is not None:
@@ -376,6 +396,7 @@ class MainWindow(tk.Tk):
         #
         # msg.after(500, msg.destroy)
 
+    # Called every second to update animal stats, product prices, main and shop UIs
     def global_tick(self):
         self.game.update_animals_stats()
         if self.game.update_product_prices():
@@ -389,15 +410,17 @@ class MainWindow(tk.Tk):
             self.update_animal_list()
         self.after(1000, self.global_tick)
 
+    # Closes the window and application
     def on_close(self):
         self.destroy()
         exit(0)
 
+    # Adds prefixes to animal names based on status (* - action required, (DEAD) - dead)
     @classmethod
     def get_animal_prefix(cls, animal):
         if not animal.isAlive:
             return "(DEAD) "
-        elif ((isinstance(animal, ProductionAnimal) and animal.product_ready)
+        elif ((isinstance(animal, ProductionAnimal) and not animal.production_timer)
               or animal.hunger >= animal.HUNGER_THRESHOLD
               or animal.boredom >= animal.HUNGER_THRESHOLD):
             return "*"

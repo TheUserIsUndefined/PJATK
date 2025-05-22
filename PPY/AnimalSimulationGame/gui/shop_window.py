@@ -8,6 +8,7 @@ from utils.window_utils import GLOBAL_FONT, center_window, resize_window
 
 
 class ShopWindow(tk.Toplevel):
+    # Initializes and displays the shop window UI
     def __init__(self, master, game):
         super().__init__(master)
         self.game = game
@@ -39,9 +40,23 @@ class ShopWindow(tk.Toplevel):
 
         self.protocol("WM_DELETE_WINDOW", self.master.close_shop)
 
+    # Builds the UI section for selling
     def initialize_sell_section(self):
         sell_frame = tk.LabelFrame(self.main_frame, text='Sell')
         sell_frame.pack(side='left', fill='y', padx=5, pady=5)
+
+        self.initialize_sell_food_category(sell_frame)
+
+    # Builds the UI section for buying
+    def initialize_buy_section(self):
+        buy_frame = tk.LabelFrame(self.main_frame, text='Buy')
+        buy_frame.pack(side='left', fill='both', expand=True, padx=5, pady=5)
+
+        self.initialize_buy_animal_category(buy_frame)
+        self.initialize_buy_food_category(buy_frame)
+
+    # Adds food to sell frame
+    def initialize_sell_food_category(self, sell_frame):
         tk.Label(sell_frame, text="Product", width=10, font=('Arial', GLOBAL_FONT), borderwidth=1,
                  relief='raised').grid(row=0, column=0)
         tk.Label(sell_frame, text="Price", width=6, font=('Arial', GLOBAL_FONT), borderwidth=1,
@@ -54,16 +69,16 @@ class ShopWindow(tk.Toplevel):
             price = prod.total_price()
             amount = self.game.state.inventory.get(type(prod), 0)
 
-            tk.Label(sell_frame, text=prod.name, width=10, font=('Arial', GLOBAL_FONT-2)).grid(row=i, column=0)
+            tk.Label(sell_frame, text=prod.name, width=10, font=('Arial', GLOBAL_FONT - 2)).grid(row=i, column=0)
 
-            price_label = tk.Label(sell_frame, text=self.format_money(price), width=6, font=('Arial', GLOBAL_FONT-2))
+            price_label = tk.Label(sell_frame, text=self.format_money(price), width=6, font=('Arial', GLOBAL_FONT - 2))
             price_label.grid(row=i, column=1)
 
-            amount_label = tk.Label(sell_frame, text=amount, width=9, font=('Arial', GLOBAL_FONT-2))
+            amount_label = tk.Label(sell_frame, text=amount, width=9, font=('Arial', GLOBAL_FONT - 2))
             amount_label.grid(row=i, column=2)
 
             sell_btn = tk.Button(
-                sell_frame, text="Sell", font=('Arial', GLOBAL_FONT-2),
+                sell_frame, text="Sell", font=('Arial', GLOBAL_FONT - 2),
                 state=(tk.NORMAL if amount > 0 else tk.DISABLED),
                 command=lambda p=prod: self.sell(p)
             )
@@ -73,14 +88,8 @@ class ShopWindow(tk.Toplevel):
             self.amount_labels.append((amount_label, prod))
             self.price_labels.append((price_label, prod))
 
-    def initialize_buy_section(self):
-        buy_frame = tk.LabelFrame(self.main_frame, text='Buy')
-        buy_frame.pack(side='left', fill='both', expand=True, padx=5, pady=5)
-
-        self.initialize_animal_category(buy_frame)
-        self.initialize_food_category(buy_frame)
-
-    def initialize_animal_category(self, buy_frame):
+    # Adds animal section to buy frame
+    def initialize_buy_animal_category(self, buy_frame):
         tk.Label(buy_frame, text="Animals", font=('Arial', GLOBAL_FONT+2)).pack(anchor='w')
         animal_grid = tk.Frame(buy_frame)
         animal_grid.pack(fill='x')
@@ -119,7 +128,8 @@ class ShopWindow(tk.Toplevel):
 
             self.buy_buttons.append((buy_btn, price))
 
-    def initialize_food_category(self, buy_frame):
+    # Adds food section to buy frame
+    def initialize_buy_food_category(self, buy_frame):
         tk.Label(buy_frame, text="Food", font=('Arial', GLOBAL_FONT+2)).pack(anchor='w', pady=(10, 0))
         food_grid = tk.Frame(buy_frame)
         food_grid.pack(fill='x')
@@ -163,6 +173,7 @@ class ShopWindow(tk.Toplevel):
             self.buy_buttons.append((food_btn, price))
             self.amount_labels.append((amount_label, prod))
 
+    # Updates buy buttons depending on current money
     def refresh_buy_buttons(self):
         for btn, cost in self.buy_buttons:
             if self.game.state.money >= cost:
@@ -170,6 +181,7 @@ class ShopWindow(tk.Toplevel):
             else:
                 btn.config(state='disabled')
 
+    # Updates sell buttons depending on current inventory
     def refresh_sell_buttons(self):
         for btn, prod in self.sell_buttons:
             if self.game.state.inventory.get(type(prod), 0) <= 0:
@@ -177,20 +189,25 @@ class ShopWindow(tk.Toplevel):
             else:
                 btn.config(state='normal')
 
+    # Updates product amount labels based on current inventory
     def refresh_amount_labels(self):
         for label, prod in self.amount_labels:
             label.config(text=self.game.state.inventory.get(type(prod), 0))
 
+    # Updates sell price labels with current product prices
     def refresh_sell_price_labels(self):
         for label, prod in self.price_labels:
             label.config(text=self.format_money(prod.total_price()))
 
+    # Updates the price update timer label
     def refresh_update_timer_label(self):
         self.update_timer_label.config(text=f"Prices refresh in: {self.game.time_until_price_update}s")
 
+    # Updates the money label
     def refresh_money_label(self):
         self.money_label.config(text=f"Money: " + self.format_money(self.game.state.money))
 
+    # Attempts to sell a product and updates UI or shows error
     def sell(self, prod):
         if self.game.state.sell_product(prod):
             self.refresh_money_label()
@@ -200,6 +217,7 @@ class ShopWindow(tk.Toplevel):
         else:
             messagebox.showinfo("Sell", "No product to sell.")
 
+    # Attempts to buy an animal and updates UI or shows error
     def buy_animal(self, animal):
         if self.game.state.buy_animal(animal):
             self.refresh_money_label()
@@ -207,6 +225,7 @@ class ShopWindow(tk.Toplevel):
         else:
             messagebox.showinfo("Buy", "Not enough money.")
 
+    # Attempts to buy a product and updates UI or shows error
     def buy_product(self, product):
         if self.game.state.buy_product(product):
             self.refresh_money_label()
@@ -216,6 +235,7 @@ class ShopWindow(tk.Toplevel):
         else:
             messagebox.showinfo("Buy", "Not enough money.")
 
+    # Formats a price as currency
     @classmethod
     def format_money(cls, price):
         return f"${price:.1f}"
