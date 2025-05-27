@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Tutorial9_EFCore_DBFirst.Models;
+using Tutorial9_EFCore_DBFirst.DAL;
+using Tutorial9_EFCore_DBFirst.DAL.Repositories;
+using Tutorial9_EFCore_DBFirst.DAL.Repositories.Abstractions;
+using Tutorial9_EFCore_DBFirst.Services;
+using Tutorial9_EFCore_DBFirst.Services.Abstractions;
 
 namespace Tutorial9_EFCore_DBFirst;
 
@@ -17,6 +21,10 @@ public class Program
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             opt.UseSqlServer(connectionString);
         });
+        
+        builder.Services.AddScoped<ITripsService, TripsService>();
+        builder.Services.AddScoped<ITripsRepository, TripsRepository>();
+        
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 

@@ -9,7 +9,7 @@ public class TripsController : ControllerBase
 {
     private readonly ITripsService _tripsService;
 
-    TripsController(ITripsService tripsService)
+    public TripsController(ITripsService tripsService)
     {
         _tripsService = tripsService;
     }
@@ -17,6 +17,8 @@ public class TripsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllTripsAsync(CancellationToken cancellationToken = default)
     {
+        var result = await _tripsService.GetAllTripsAsync(cancellationToken);
         
+        return Ok(result);
     }
 }
