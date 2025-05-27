@@ -1,4 +1,4 @@
-﻿namespace Tutorial9_EFCore_DBFirst.DTOs;
+﻿namespace Tutorial9_EFCore_DBFirst.DTOs.Responses;
 
 public class ClientDto
 {
