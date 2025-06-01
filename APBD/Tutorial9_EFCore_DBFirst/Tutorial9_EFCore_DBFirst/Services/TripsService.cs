@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using Tutorial9_EFCore_DBFirst.DAL.Infrastructure;
 using Tutorial9_EFCore_DBFirst.DAL.Models;
-using Tutorial9_EFCore_DBFirst.DAL.Repositories.Abstractions;
+using Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories.Abstractions;
 using Tutorial9_EFCore_DBFirst.DTOs.Requests;
 using Tutorial9_EFCore_DBFirst.DTOs.Responses;
 using Tutorial9_EFCore_DBFirst.Exceptions;
@@ -14,14 +15,17 @@ public class TripsService : ITripsService
     private readonly ITripsRepository _tripsRepository;
     private readonly IClientsRepository _clientsRepository;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IUnitOfWork _unitOfWork;
 
     public TripsService(ITripsRepository tripsRepository, 
         IClientsRepository clientsRepository,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IUnitOfWork unitOfWork)
     {
         _tripsRepository = tripsRepository;
         _clientsRepository = clientsRepository;
         _dateTimeProvider = dateTimeProvider;
+        _unitOfWork = unitOfWork;
     }
     
     public async Task<IEnumerable<GetTripDto>> GetAllTripsAsync(CancellationToken cancellationToken)
@@ -60,46 +64,57 @@ public class TripsService : ITripsService
     {
         if (idTrip < 1)
             throw new ArgumentException("Trip id should be greater than 0.");
+
+        _unitOfWork.BeginTransaction();
         
-        var tripExists = await _tripsRepository.TripExistsByIdAsync(idTrip, cancellationToken);
-        if (!tripExists)
-            throw new TripExceptions.TripNotFoundException(idTrip);
-        
-        var clientId = await _clientsRepository.GetClientIdByPeselAsync(request.Pesel, cancellationToken);
-        if (clientId == 0)
+        try
         {
-            var client = new Client
+            var tripExists = await _tripsRepository.TripExistsByIdAsync(idTrip, cancellationToken);
+            if (!tripExists)
+                throw new TripExceptions.TripNotFoundException(idTrip);
+
+            var clientId = await _clientsRepository.GetClientIdByPeselAsync(request.Pesel, cancellationToken);
+            if (clientId == 0)
             {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Email = request.Email,
-                Telephone = request.Telephone,
-                Pesel = request.Pesel
+                var client = new Client
+                {
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    Email = request.Email,
+                    Telephone = request.Telephone,
+                    Pesel = request.Pesel
+                };
+                clientId = await _clientsRepository.AddClientAsync(client, cancellationToken);
+            }
+            else
+            {
+                var clientRegisteredOnTrip = await _tripsRepository
+                    .IsClientRegisteredOnTripAsync(clientId, idTrip, cancellationToken);
+                if (clientRegisteredOnTrip)
+                    throw new ClientTripAlreadyRegisteredException(clientId, idTrip);
+            }
+
+            var tripOccurred = await _tripsRepository.HasTripAlreadyOccurredAsync(idTrip, cancellationToken);
+            if (tripOccurred)
+                throw new TripExceptions.TripAlreadyOccurredException(idTrip);
+
+            var clientTrip = new ClientTrip
+            {
+                IdClient = clientId,
+                IdTrip = idTrip,
+                RegisteredAt = _dateTimeProvider.Now(),
+                PaymentDate = request.PaymentDate
             };
-            clientId = await _clientsRepository.AddClientAsync(client, cancellationToken);
-        } 
-        else
-        {
-            var clientRegisteredOnTrip = await _tripsRepository
-                .IsClientRegisteredOnTripAsync(clientId, idTrip, cancellationToken);
-            if (clientRegisteredOnTrip)
-                throw new ClientTripAlreadyRegisteredException(clientId, idTrip);
+
+            await _tripsRepository.AddClientTripAsync(clientTrip, cancellationToken);
+
+            await _unitOfWork.CommitTransactionAsync();
+            return clientId;
         }
-
-        var tripOccurred = await _tripsRepository.HasTripAlreadyOccurredAsync(idTrip, cancellationToken);
-        if (tripOccurred)
-            throw new TripExceptions.TripAlreadyOccurredException(idTrip);
-
-        var clientTrip = new ClientTrip
+        catch (Exception)
         {
-            IdClient = clientId,
-            IdTrip = idTrip,
-            RegisteredAt = _dateTimeProvider.Now(),
-            PaymentDate = request.PaymentDate
-        };
-        
-        await _tripsRepository.AddClientTripAsync(clientTrip, cancellationToken);
-        
-        return clientId;
+            await _unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
     }
 }

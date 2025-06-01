@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tutorial9_EFCore_DBFirst.DAL.Models;
-using Tutorial9_EFCore_DBFirst.DAL.Repositories.Abstractions;
+using Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories.Abstractions;
 
-namespace Tutorial9_EFCore_DBFirst.DAL.Repositories;
+namespace Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories;
 
 public class ClientsRepository : IClientsRepository
 {
@@ -42,7 +42,6 @@ public class ClientsRepository : IClientsRepository
             return false;
         
         _context.Clients.Remove(client);
-        await _context.SaveChangesAsync(cancellationToken);
         
         return true;
     }

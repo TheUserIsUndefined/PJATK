@@ -1,6 +1,6 @@
 ﻿using Tutorial9_EFCore_DBFirst.DAL.Models;
 
-namespace Tutorial9_EFCore_DBFirst.DAL.Repositories.Abstractions;
+namespace Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories.Abstractions;
 
 public interface IClientsRepository
 {

@@ -1,4 +1,4 @@
-﻿using Tutorial9_EFCore_DBFirst.DAL.Repositories.Abstractions;
+﻿using Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories.Abstractions;
 using Tutorial9_EFCore_DBFirst.Exceptions;
 using Tutorial9_EFCore_DBFirst.Services.Abstractions;
 

@@ -1,7 +1,7 @@
 ﻿using Tutorial9_EFCore_DBFirst.DAL.Models;
 using Tutorial9_EFCore_DBFirst.DTOs.Responses;
 
-namespace Tutorial9_EFCore_DBFirst.DAL.Repositories.Abstractions;
+namespace Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories.Abstractions;
 
 public interface ITripsRepository
 {

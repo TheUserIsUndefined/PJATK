@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Tutorial9_EFCore_DBFirst.DAL;
-using Tutorial9_EFCore_DBFirst.DAL.Repositories;
-using Tutorial9_EFCore_DBFirst.DAL.Repositories.Abstractions;
+using Tutorial9_EFCore_DBFirst.DAL.Infrastructure;
+using Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories;
+using Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories.Abstractions;
 using Tutorial9_EFCore_DBFirst.Services;
 using Tutorial9_EFCore_DBFirst.Services.Abstractions;
 
@@ -27,6 +28,7 @@ public class Program
         builder.Services.AddScoped<IClientsService, ClientsService>();
         builder.Services.AddScoped<IClientsRepository, ClientsRepository>();
         builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();

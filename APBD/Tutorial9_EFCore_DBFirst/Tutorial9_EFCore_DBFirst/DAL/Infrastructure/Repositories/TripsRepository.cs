@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tutorial9_EFCore_DBFirst.DAL.Models;
-using Tutorial9_EFCore_DBFirst.DAL.Repositories.Abstractions;
+using Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories.Abstractions;
 using Tutorial9_EFCore_DBFirst.DTOs.Responses;
 using Tutorial9_EFCore_DBFirst.Services.Abstractions;
 
-namespace Tutorial9_EFCore_DBFirst.DAL.Repositories;
+namespace Tutorial9_EFCore_DBFirst.DAL.Infrastructure.Repositories;
 
 public class TripsRepository : ITripsRepository
 {
@@ -73,15 +73,15 @@ public class TripsRepository : ITripsRepository
 
     public async Task<bool> HasTripAlreadyOccurredAsync(int tripId, CancellationToken cancellationToken = default)
     {
-        return await _context.ClientTrips
-            .AnyAsync(ct => ct.IdTrip == tripId && ct.IdTripNavigation.DateFrom < _dateTimeProvider.Now(), 
+        return await _context.Trips
+            .AnyAsync(t => t.IdTrip == tripId && t.DateFrom < _dateTimeProvider.Now(), 
                 cancellationToken);
     }
 
     public async Task<bool> AddClientTripAsync(ClientTrip clientTrip, CancellationToken cancellationToken = default)
     {
         _context.ClientTrips.Add(clientTrip);
-        await _context.SaveChangesAsync(cancellationToken);
+        
         return true;
     }
 }
