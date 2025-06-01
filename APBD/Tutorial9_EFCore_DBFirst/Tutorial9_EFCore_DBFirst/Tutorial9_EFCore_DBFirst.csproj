@@ -20,4 +20,9 @@
         </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Core\" />
+      <Folder Include="Presentation\" />
+    </ItemGroup>
+
 </Project>
