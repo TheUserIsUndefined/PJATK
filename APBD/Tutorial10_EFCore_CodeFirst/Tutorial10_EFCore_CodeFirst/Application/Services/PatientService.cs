@@ -53,6 +53,8 @@ public class PatientService : IPatientService
             
             prescriptionsResp.Add(prescriptionResp);
         }
+        
+        prescriptionsResp.Sort((p1, p2) => p1.DueDate.CompareTo(p2.DueDate));
 
         var patientResp = new GetPatientResponse
         {
