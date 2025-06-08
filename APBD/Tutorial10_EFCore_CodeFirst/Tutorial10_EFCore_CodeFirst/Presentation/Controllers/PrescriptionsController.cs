@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Tutorial10_EFCore_CodeFirst.Application.DTOs.Requests;
 using Tutorial10_EFCore_CodeFirst.Application.Exceptions;
 using Tutorial10_EFCore_CodeFirst.Application.Services.Interfaces;
@@ -14,6 +15,7 @@ public class PrescriptionsController : ControllerBase
     public PrescriptionsController(IPrescriptionService prescriptionService) 
         => _prescriptionService = prescriptionService;
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> AddPrescriptionAsync(AddPrescriptionRequest request,
         CancellationToken cancellationToken = default)

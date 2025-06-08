@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Tutorial10_EFCore_CodeFirst.Application.Exceptions;
 using Tutorial10_EFCore_CodeFirst.Application.Services.Interfaces;
 
@@ -12,6 +13,7 @@ public class PatientsController : ControllerBase
     
     public PatientsController(IPatientService patientService) => _patientService = patientService;
 
+    [Authorize]
     [HttpGet("{patientId:int}")]
     public async Task<IActionResult> GetPatientAsync(int patientId,
         CancellationToken cancellationToken = default)

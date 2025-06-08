@@ -9,5 +9,8 @@ public static class ApplicationServicesExtension
     {
         app.AddScoped<IPrescriptionService, PrescriptionService>();
         app.AddScoped<IPatientService, PatientService>();
+        app.AddScoped<IUserService, UserService>();
+        app.AddScoped<IDateTimeProvider, DateTimeProvider>();
+        app.AddScoped<ITokenService, TokenService>();
     }
 }

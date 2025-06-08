@@ -10,6 +10,7 @@ public class PrescriptionContext : DbContext
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<Medicament> Medicaments { get; set; }
     public DbSet<PrescriptionMedicament> PrescriptionMedicaments { get; set; }
+    public DbSet<User> Users { get; set; }
     
     protected PrescriptionContext()
     {
