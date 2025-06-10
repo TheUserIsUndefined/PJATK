@@ -36,7 +36,7 @@ public class PublishingHouseService : IPublishingHouseService
         
         var publishingHouses = await query.ToListAsync(cancellation);
 
-        var response = new List<GetPublishingHousesResponse>();
+        var getPublishingHousesResponse = new List<GetPublishingHousesResponse>();
         foreach (var publishingHouse in publishingHouses)
         {
             var bookResponses = new List<BookResponse>();
@@ -69,7 +69,7 @@ public class PublishingHouseService : IPublishingHouseService
                 bookResponses.Add(bookResponse);
             }
 
-            var reponse = new GetPublishingHousesResponse
+            var response = new GetPublishingHousesResponse
             {
                 IdPublishingHouse = publishingHouse.IdPublishingHouse,
                 Name = publishingHouse.Name,
@@ -78,9 +78,9 @@ public class PublishingHouseService : IPublishingHouseService
                 Books = bookResponses
             };
             
-            response.Add(reponse);
+            getPublishingHousesResponse.Add(response);
         }
         
-        return response;
+        return getPublishingHousesResponse;
     }
 }
