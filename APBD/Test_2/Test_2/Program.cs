@@ -16,7 +16,6 @@ public class Program
             opt.UseSqlServer(connectionString));
         
         builder.Services.RegisterApplicationServices();
-        builder.Services.RegisterInfrastructureServices();
 
         // Add services to the container.
 
