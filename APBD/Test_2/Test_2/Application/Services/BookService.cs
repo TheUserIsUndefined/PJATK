@@ -20,9 +20,9 @@ public class BookService : IBookService
 
     public async Task<int> AddBookAsync(AddBookRequest request, CancellationToken cancellation = default)
     {
-        if (request.Authors.IsNullOrEmpty())
-            throw new ArgumentException("Authors cannot be null or empty.");
-        if (request.Genres is null)
+        if (request.Authors.Count == 0)
+            throw new ArgumentException("Authors cannot be empty.");
+        if (request.Genres.Count == 0)
             throw new ArgumentException("Genres cannot be empty.");
         
         var publishingHouse = await _context.PublishingHouses
