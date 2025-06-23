@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Project.Infrastructure;
 
@@ -11,9 +12,11 @@ using Project.Infrastructure;
 namespace Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623194731_SeedData")]
+    partial class SeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -400,36 +403,6 @@ namespace Project.Migrations
                     b.ToTable("Payments");
                 });
 
-            modelBuilder.Entity("Project.Core.Models.Role", b =>
-                {
-                    b.Property<int>("RoleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleId"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("RoleId");
-
-                    b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = 1,
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            Name = "Employee"
-                        });
-                });
-
             modelBuilder.Entity("Project.Core.Models.Software", b =>
                 {
                     b.Property<int>("SoftwareId")
@@ -567,88 +540,6 @@ namespace Project.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Project.Core.Models.User", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("RefreshToken")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RefreshTokenExp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Salt")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            Password = "PfQBP3YFpHxxyvwYa/AwDMxu4+EC2XFsnKiHxQnbpBo=",
-                            RefreshToken = "Ioq8YsX4f/NgOjKIcN78k8bqnzTVUWnXPbrsYKQG9yA=",
-                            RefreshTokenExp = new DateTime(2028, 3, 19, 23, 29, 5, 946, DateTimeKind.Unspecified).AddTicks(5736),
-                            Salt = "tGDsTQxWHWfTjOiLteIvAA==",
-                            Username = "Admin"
-                        });
-                });
-
-            modelBuilder.Entity("Project.Core.Models.UserRole", b =>
-                {
-                    b.Property<int>("UserRoleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserRoleId"));
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserRoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            UserRoleId = 1,
-                            RoleId = 1,
-                            UserId = 1
-                        },
-                        new
-                        {
-                            UserRoleId = 2,
-                            RoleId = 2,
-                            UserId = 1
-                        });
-                });
-
             modelBuilder.Entity("Project.Core.Models.Company", b =>
                 {
                     b.HasOne("Project.Core.Models.Client", "Client")
@@ -723,25 +614,6 @@ namespace Project.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("Project.Core.Models.UserRole", b =>
-                {
-                    b.HasOne("Project.Core.Models.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Project.Core.Models.User", "User")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Project.Core.Models.Client", b =>
                 {
                     b.Navigation("Company");
@@ -761,11 +633,6 @@ namespace Project.Migrations
                     b.Navigation("Discounts");
                 });
 
-            modelBuilder.Entity("Project.Core.Models.Role", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
             modelBuilder.Entity("Project.Core.Models.Software", b =>
                 {
                     b.Navigation("Contracts");
@@ -774,11 +641,6 @@ namespace Project.Migrations
             modelBuilder.Entity("Project.Core.Models.SoftwareCategory", b =>
                 {
                     b.Navigation("Softwares");
-                });
-
-            modelBuilder.Entity("Project.Core.Models.User", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

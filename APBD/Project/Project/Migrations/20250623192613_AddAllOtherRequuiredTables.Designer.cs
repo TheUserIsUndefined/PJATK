@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Project.Infrastructure;
 
@@ -11,9 +12,11 @@ using Project.Infrastructure;
 namespace Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623192613_AddAllOtherRequuiredTables")]
+    partial class AddAllOtherRequuiredTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,43 +50,6 @@ namespace Project.Migrations
                     b.HasKey("ClientId");
 
                     b.ToTable("Clients");
-
-                    b.HasData(
-                        new
-                        {
-                            ClientId = 1,
-                            Address = "Ul. Krakowska 15, 00-001 Warszawa",
-                            Email = "jan.kowalski@email.com",
-                            PhoneNumber = "123456789"
-                        },
-                        new
-                        {
-                            ClientId = 2,
-                            Address = "Ul. Marszałkowska 100, 00-026 Warszawa",
-                            Email = "kontakt@techcorp.pl",
-                            PhoneNumber = "987654321"
-                        },
-                        new
-                        {
-                            ClientId = 3,
-                            Address = "Ul. Nowy Świat 25, 00-029 Warszawa",
-                            Email = "anna.nowak@gmail.com",
-                            PhoneNumber = "555123456"
-                        },
-                        new
-                        {
-                            ClientId = 4,
-                            Address = "Ul. Piękna 50, 00-672 Warszawa",
-                            Email = "info@innovate.com.pl",
-                            PhoneNumber = "111222333"
-                        },
-                        new
-                        {
-                            ClientId = 5,
-                            Address = "Ul. Mokotowska 12, 00-640 Warszawa",
-                            Email = "piotr.wisniewski@outlook.com",
-                            PhoneNumber = "444555666"
-                        });
                 });
 
             modelBuilder.Entity("Project.Core.Models.Company", b =>
@@ -113,22 +79,6 @@ namespace Project.Migrations
                         .IsUnique();
 
                     b.ToTable("Companies");
-
-                    b.HasData(
-                        new
-                        {
-                            CompanyId = 1,
-                            ClientId = 2,
-                            Krs = "0000123456",
-                            Name = "TechCorp Sp. z o.o."
-                        },
-                        new
-                        {
-                            CompanyId = 2,
-                            ClientId = 4,
-                            Krs = "0000987654",
-                            Name = "Innovate Solutions"
-                        });
                 });
 
             modelBuilder.Entity("Project.Core.Models.Contract", b =>
@@ -195,7 +145,7 @@ namespace Project.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("DiscountTypeId")
+                    b.Property<int>("DiscountTypeTypeId")
                         .HasColumnType("int");
 
                     b.Property<DateOnly>("EndDate")
@@ -215,61 +165,9 @@ namespace Project.Migrations
 
                     b.HasKey("DiscountId");
 
-                    b.HasIndex("DiscountTypeId");
+                    b.HasIndex("DiscountTypeTypeId");
 
                     b.ToTable("Discounts");
-
-                    b.HasData(
-                        new
-                        {
-                            DiscountId = 1,
-                            Description = "Special discount for new year contracts",
-                            DiscountTypeId = 1,
-                            EndDate = new DateOnly(2025, 3, 31),
-                            Name = "New Year 2025",
-                            PercentageValue = 15.00m,
-                            StartDate = new DateOnly(2025, 1, 1)
-                        },
-                        new
-                        {
-                            DiscountId = 2,
-                            Description = "Discount for large volume purchases",
-                            DiscountTypeId = 1,
-                            EndDate = new DateOnly(2025, 12, 31),
-                            Name = "Enterprise Package",
-                            PercentageValue = 25.00m,
-                            StartDate = new DateOnly(2025, 1, 1)
-                        },
-                        new
-                        {
-                            DiscountId = 3,
-                            Description = "Loyalty discount for existing clients",
-                            DiscountTypeId = 1,
-                            EndDate = new DateOnly(2025, 12, 31),
-                            Name = "Returning Customer",
-                            PercentageValue = 10.00m,
-                            StartDate = new DateOnly(2025, 1, 1)
-                        },
-                        new
-                        {
-                            DiscountId = 4,
-                            Description = "Summer promotional discount",
-                            DiscountTypeId = 1,
-                            EndDate = new DateOnly(2025, 8, 31),
-                            Name = "Summer Sale",
-                            PercentageValue = 20.00m,
-                            StartDate = new DateOnly(2025, 6, 1)
-                        },
-                        new
-                        {
-                            DiscountId = 5,
-                            Description = "Educational institution discount",
-                            DiscountTypeId = 2,
-                            EndDate = new DateOnly(2025, 12, 31),
-                            Name = "Student Special",
-                            PercentageValue = 30.00m,
-                            StartDate = new DateOnly(2025, 1, 1)
-                        });
                 });
 
             modelBuilder.Entity("Project.Core.Models.DiscountType", b =>
@@ -337,35 +235,6 @@ namespace Project.Migrations
                         .IsUnique();
 
                     b.ToTable("Individuals");
-
-                    b.HasData(
-                        new
-                        {
-                            IndividualId = 1,
-                            ClientId = 1,
-                            FirstName = "Jan",
-                            IsDeleted = false,
-                            LastName = "Kowalski",
-                            Pesel = "85010112345"
-                        },
-                        new
-                        {
-                            IndividualId = 2,
-                            ClientId = 3,
-                            FirstName = "Anna",
-                            IsDeleted = false,
-                            LastName = "Nowak",
-                            Pesel = "90052298765"
-                        },
-                        new
-                        {
-                            IndividualId = 3,
-                            ClientId = 5,
-                            FirstName = "Piotr",
-                            IsDeleted = false,
-                            LastName = "Wiśniewski",
-                            Pesel = "78121545678"
-                        });
                 });
 
             modelBuilder.Entity("Project.Core.Models.Payment", b =>
@@ -398,36 +267,6 @@ namespace Project.Migrations
                     b.HasIndex("ContractId");
 
                     b.ToTable("Payments");
-                });
-
-            modelBuilder.Entity("Project.Core.Models.Role", b =>
-                {
-                    b.Property<int>("RoleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleId"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("RoleId");
-
-                    b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = 1,
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            Name = "Employee"
-                        });
                 });
 
             modelBuilder.Entity("Project.Core.Models.Software", b =>
@@ -469,57 +308,6 @@ namespace Project.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Softwares");
-
-                    b.HasData(
-                        new
-                        {
-                            SoftwareId = 1,
-                            CategoryId = 1,
-                            CurrentVersion = "3.2.1",
-                            Description = "Complete business management solution",
-                            Name = "BusinessPro",
-                            SubscriptionCost = 150.00m,
-                            UpfrontCostPerYear = 1200.00m
-                        },
-                        new
-                        {
-                            SoftwareId = 2,
-                            CategoryId = 2,
-                            CurrentVersion = "2.1.5",
-                            Description = "Advanced accounting software",
-                            Name = "AccounTech",
-                            SubscriptionCost = 100.00m
-                        },
-                        new
-                        {
-                            SoftwareId = 3,
-                            CategoryId = 3,
-                            CurrentVersion = "4.0.2",
-                            Description = "Customer relationship management system",
-                            Name = "ClientConnect",
-                            SubscriptionCost = 250.00m,
-                            UpfrontCostPerYear = 2000.00m
-                        },
-                        new
-                        {
-                            SoftwareId = 4,
-                            CategoryId = 4,
-                            CurrentVersion = "1.8.3",
-                            Description = "Project and task management platform",
-                            Name = "TaskMaster",
-                            SubscriptionCost = 75.00m,
-                            UpfrontCostPerYear = 600.00m
-                        },
-                        new
-                        {
-                            SoftwareId = 5,
-                            CategoryId = 5,
-                            CurrentVersion = "5.1.0",
-                            Description = "Enterprise security management suite",
-                            Name = "SecureGuard",
-                            SubscriptionCost = 400.00m,
-                            UpfrontCostPerYear = 3000.00m
-                        });
                 });
 
             modelBuilder.Entity("Project.Core.Models.SoftwareCategory", b =>
@@ -543,109 +331,12 @@ namespace Project.Migrations
                         new
                         {
                             CategoryId = 1,
-                            Name = "Business Management"
+                            Name = "Finances"
                         },
                         new
                         {
                             CategoryId = 2,
-                            Name = "Accounting"
-                        },
-                        new
-                        {
-                            CategoryId = 3,
-                            Name = "CRM"
-                        },
-                        new
-                        {
-                            CategoryId = 4,
-                            Name = "Project Management"
-                        },
-                        new
-                        {
-                            CategoryId = 5,
-                            Name = "Security"
-                        });
-                });
-
-            modelBuilder.Entity("Project.Core.Models.User", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("RefreshToken")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RefreshTokenExp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Salt")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            Password = "PfQBP3YFpHxxyvwYa/AwDMxu4+EC2XFsnKiHxQnbpBo=",
-                            RefreshToken = "Ioq8YsX4f/NgOjKIcN78k8bqnzTVUWnXPbrsYKQG9yA=",
-                            RefreshTokenExp = new DateTime(2028, 3, 19, 23, 29, 5, 946, DateTimeKind.Unspecified).AddTicks(5736),
-                            Salt = "tGDsTQxWHWfTjOiLteIvAA==",
-                            Username = "Admin"
-                        });
-                });
-
-            modelBuilder.Entity("Project.Core.Models.UserRole", b =>
-                {
-                    b.Property<int>("UserRoleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserRoleId"));
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserRoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            UserRoleId = 1,
-                            RoleId = 1,
-                            UserId = 1
-                        },
-                        new
-                        {
-                            UserRoleId = 2,
-                            RoleId = 2,
-                            UserId = 1
+                            Name = "Education"
                         });
                 });
 
@@ -683,7 +374,7 @@ namespace Project.Migrations
                 {
                     b.HasOne("Project.Core.Models.DiscountType", "DiscountType")
                         .WithMany("Discounts")
-                        .HasForeignKey("DiscountTypeId")
+                        .HasForeignKey("DiscountTypeTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -723,25 +414,6 @@ namespace Project.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("Project.Core.Models.UserRole", b =>
-                {
-                    b.HasOne("Project.Core.Models.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Project.Core.Models.User", "User")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Project.Core.Models.Client", b =>
                 {
                     b.Navigation("Company");
@@ -761,11 +433,6 @@ namespace Project.Migrations
                     b.Navigation("Discounts");
                 });
 
-            modelBuilder.Entity("Project.Core.Models.Role", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
             modelBuilder.Entity("Project.Core.Models.Software", b =>
                 {
                     b.Navigation("Contracts");
@@ -774,11 +441,6 @@ namespace Project.Migrations
             modelBuilder.Entity("Project.Core.Models.SoftwareCategory", b =>
                 {
                     b.Navigation("Softwares");
-                });
-
-            modelBuilder.Entity("Project.Core.Models.User", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

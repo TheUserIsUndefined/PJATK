@@ -21,4 +21,6 @@ public class Client
     
     public Individual? Individual { get; set; }
     public Company? Company { get; set; }
+    
+    public ICollection<Contract> Contracts { get; set; }
 }

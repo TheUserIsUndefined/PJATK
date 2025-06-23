@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Project.Application.DTOs.Requests;
 
-public class IndividualDto
+public class AddIndividualRequest
 {
     [Required]
     [MaxLength(50)]
@@ -13,6 +13,6 @@ public class IndividualDto
     public string LastName { get; set; }
     
     [Required]
-    [MaxLength(11)]
+    [RegularExpression(@"^\d{11}$", ErrorMessage = "PESEL must be exactly 10 digits.")]
     public string Pesel { get; set; }
 }

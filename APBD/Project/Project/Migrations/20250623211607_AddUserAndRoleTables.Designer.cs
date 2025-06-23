@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Project.Infrastructure;
 
@@ -11,9 +12,11 @@ using Project.Infrastructure;
 namespace Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623211607_AddUserAndRoleTables")]
+    partial class AddUserAndRoleTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -416,18 +419,6 @@ namespace Project.Migrations
                     b.HasKey("RoleId");
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = 1,
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            Name = "Employee"
-                        });
                 });
 
             modelBuilder.Entity("Project.Core.Models.Software", b =>
@@ -599,54 +590,21 @@ namespace Project.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            Password = "PfQBP3YFpHxxyvwYa/AwDMxu4+EC2XFsnKiHxQnbpBo=",
-                            RefreshToken = "Ioq8YsX4f/NgOjKIcN78k8bqnzTVUWnXPbrsYKQG9yA=",
-                            RefreshTokenExp = new DateTime(2028, 3, 19, 23, 29, 5, 946, DateTimeKind.Unspecified).AddTicks(5736),
-                            Salt = "tGDsTQxWHWfTjOiLteIvAA==",
-                            Username = "Admin"
-                        });
                 });
 
-            modelBuilder.Entity("Project.Core.Models.UserRole", b =>
+            modelBuilder.Entity("RoleUser", b =>
                 {
-                    b.Property<int>("UserRoleId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("RolesRoleId")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserRoleId"));
-
-                    b.Property<int>("RoleId")
+                    b.Property<int>("UsersUserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.HasKey("RolesRoleId", "UsersUserId");
 
-                    b.HasKey("UserRoleId");
+                    b.HasIndex("UsersUserId");
 
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            UserRoleId = 1,
-                            RoleId = 1,
-                            UserId = 1
-                        },
-                        new
-                        {
-                            UserRoleId = 2,
-                            RoleId = 2,
-                            UserId = 1
-                        });
+                    b.ToTable("RoleUser");
                 });
 
             modelBuilder.Entity("Project.Core.Models.Company", b =>
@@ -723,23 +681,19 @@ namespace Project.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("Project.Core.Models.UserRole", b =>
+            modelBuilder.Entity("RoleUser", b =>
                 {
-                    b.HasOne("Project.Core.Models.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
+                    b.HasOne("Project.Core.Models.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesRoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Project.Core.Models.User", "User")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId")
+                    b.HasOne("Project.Core.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Project.Core.Models.Client", b =>
@@ -761,11 +715,6 @@ namespace Project.Migrations
                     b.Navigation("Discounts");
                 });
 
-            modelBuilder.Entity("Project.Core.Models.Role", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
             modelBuilder.Entity("Project.Core.Models.Software", b =>
                 {
                     b.Navigation("Contracts");
@@ -774,11 +723,6 @@ namespace Project.Migrations
             modelBuilder.Entity("Project.Core.Models.SoftwareCategory", b =>
                 {
                     b.Navigation("Softwares");
-                });
-
-            modelBuilder.Entity("Project.Core.Models.User", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

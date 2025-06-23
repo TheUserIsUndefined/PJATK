@@ -13,9 +13,11 @@ public class AddClientRequest
     public string Email { get; set; }
     
     [Required]
+    [Phone]
     [MaxLength(20)]
     public string PhoneNumber { get; set; }
     
-    public IndividualDto? Individual { get; set; }
-    public CompanyDto? Company { get; set; }
+    public AddIndividualRequest? Individual { get; set; }
+    
+    public AddCompanyRequest? Company { get; set; }
 }
